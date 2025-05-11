@@ -30,7 +30,7 @@ int main() {
             handle_client(std::move(socket));
         }
     } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
+        std::cerr << "Error: " << e.what() << "\n";
     }
 
     return 0;

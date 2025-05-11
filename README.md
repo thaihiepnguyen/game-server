@@ -19,3 +19,9 @@ cd build
 cmake .. -DCMAKE_TOOLCHAIN_FILE="${YOUR_VCPKG_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake"
 make
 ```
+
+### 4. Run project
+
+```
+./mygame
+```

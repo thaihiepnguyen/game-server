@@ -39,3 +39,6 @@ vcpkg_installed
 
 # Vscode
 .vscode
+
+# Jetbrain
+.idea

@@ -1,7 +1,7 @@
 # Specify the minimum required version of CMake
-cmake_minimum_required(VERSION 4.0.1)
+cmake_minimum_required(VERSION 3.31.6)
 
-# Define the name of your project
+# Define the name of the project
 project(MyGame)
 
 # TODO: understand why we need these commands
