@@ -1,12 +1,13 @@
 #include <iostream>
 #include <memory>
+#include "core/test.cpp"
 
 
 
 int main() {
-    std::cout << "Hello World" << std::endl;
+    Animal* a = new Animal();
 
-
+    a->park();
 
     return 0;
 }
