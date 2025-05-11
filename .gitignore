@@ -34,5 +34,8 @@
 # Builds
 build
 
+# Library Packages
+vcpkg_installed
+
 # Vscode
 .vscode
