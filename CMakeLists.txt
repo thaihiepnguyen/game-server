@@ -8,9 +8,12 @@ project(MyGame)
 find_package(fmt REQUIRED)
 find_package(asio REQUIRED)
 
+# Include the directory where the header files are located
+include_directories(include)
+
 # Collect all .cpp files from the src directory and store them in the SOURCES variable
 # This will automatically add any new .cpp files added to the src/ folder
-file(GLOB SOURCES src/*.cpp)
+file(GLOB SOURCES src/*.cpp src/**/*.cpp)
 
 # Create an executable target named 'mygame' from the collected .cpp files
 # This will compile and link the source files to form the executable

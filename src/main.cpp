@@ -1,37 +1,15 @@
 #include <asio.hpp>
 #include <iostream>
+#include "network/tcp_server.hpp"
 
 using asio::ip::tcp;
 
-void handle_client(tcp::socket socket) {
-    try {
-        char data[512];
-        while (true) {
-            std::size_t length = socket.read_some(asio::buffer(data));
-            std::cout << "Received: " << std::string(data, length) << std::endl;
-            asio::write(socket, asio::buffer(data, length)); // Echo message back to client
-        }
-    } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
-    }
-}
+const int PORT = 12345;
+
 
 int main() {
-    try {
-        asio::io_context io_context;
+    TCPServer tcpServer(PORT);
 
-        tcp::acceptor acceptor(io_context, tcp::endpoint(tcp::v4(), 12345));
-        std::cout << "Server listening on port 12345..." << std::endl;
-
-        while (true) {
-            tcp::socket socket(io_context);
-            acceptor.accept(socket);
-            std::cout << "Client connected!" << std::endl;
-            handle_client(std::move(socket));
-        }
-    } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << "\n";
-    }
-
+    tcpServer.start();
     return 0;
 }
