@@ -21,19 +21,43 @@ void TCPServer::start() {
 }
 
 void TCPServer::_accept() {
-    while (true) {
-        auto newConnection = std::make_shared<TCPConnection>(this->_ioContext);
-         
-        this->_acceptor.accept(newConnection->socket());
-        std::cout << "New connection accepted.\n";
+    auto newConnection = std::make_shared<TCPConnection>(this->_ioContext);
 
-        std::string hello_message = "Hello from server!";
-        asio::error_code error;
-        asio::write(newConnection->socket(), asio::buffer(hello_message), error);
-        if (error) {
-            std::cerr << "Error sending message: " << error.message() << "\n";
+    this->_acceptor.async_accept(newConnection->socket(), [this, newConnection](const asio::error_code& error) {
+        if (!error) {
+            std::cout << "New connection accepted.\n";
+            this->_connections.push_back(newConnection);
+            this->_readMessage(newConnection);
         } else {
-            std::cout << "Sent message: " << hello_message << "\n";
+            std::cerr << "Accept error: " << error.message() << "\n";
         }
-    }
+
+        this->_accept();
+    });
+}
+
+void TCPServer::_readMessage(std::shared_ptr<TCPConnection> connection) {
+    auto buffer = std::make_shared<std::array<char, 1024>>();
+    connection->socket().async_read_some(asio::buffer(*buffer), [this, connection, buffer](const asio::error_code& error, std::size_t bytes_transferred) {
+        if (!error) {
+            std::string message(buffer->data(), bytes_transferred);
+            std::cout << "Received message: " << message << "\n";
+ 
+            if (message == "EXIT") {
+                std::cout << "Client disconnected.\n";
+                // Remove the connection from the list of active connections
+                this->_connections.erase(std::find(this->_connections.begin(), this->_connections.end(), connection));
+                connection->socket().close();
+                return;
+            }
+ 
+            this->_readMessage(connection);
+        } else {
+            std::cerr << "Error reading message: " << error.message() << "\n";
+ 
+            // Remove the connection from the list of active connections
+            this->_connections.erase(std::find(this->_connections.begin(), this->_connections.end(), connection));
+            connection->socket().close();
+        }
+    });
 }
