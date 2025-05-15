@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "dependencies": [
     "fmt",
-    "asio"
+    "asio",
+    "nlohmann-json",
+    "mysql-connector-cpp"
   ]
 }

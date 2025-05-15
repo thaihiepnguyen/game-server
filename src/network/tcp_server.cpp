@@ -1,7 +1,10 @@
 #include "network/tcp_server.hpp"
 #include "network/tcp_connection.hpp"
+#include "models/position.hpp"
 #include <iostream>
 #include <memory>
+#include <nlohmann/json.hpp>
+
 
 using asio::ip::tcp;
 
@@ -10,54 +13,98 @@ TCPServer::TCPServer(int port) :
     _acceptor(tcp::acceptor(this->_ioContext, tcp::endpoint(tcp::v4(), port)))
 {}
 
-void TCPServer::start() {
-    std::cout << "Server is running on port " << this->_port << "\n";
+void TCPServer::start(void (*onServerStarted)())
+{
     try {
         this->_accept();
+        if (onServerStarted) {
+            onServerStarted();
+        }
         this->_ioContext.run();
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << "\n";
     }
 }
 
+void TCPServer::_disconnect(std::shared_ptr<TCPConnection> connection)
+{
+    auto it = std::find(this->_connections.begin(), this->_connections.end(), connection);
+    if (it != this->_connections.end()) {
+        this->_connections.erase(it);
+        connection->socket().close();
+    }
+}
+
+void TCPServer::_broadcast(const Position &pos, std::shared_ptr<TCPConnection> sourceConnection)
+{
+    for (const auto& destConnection : this->_connections) {
+        if (destConnection != sourceConnection) {
+            nlohmann::json jsonMessage;
+            jsonMessage["command"] = "UPDATE_POSITION";
+            jsonMessage["position"] = pos;
+            jsonMessage["playerId"] = sourceConnection->userId();
+
+            std::string message = jsonMessage.dump();
+            auto buffer = std::make_shared<std::string>(message);
+            asio::async_write(
+                destConnection->socket(),
+                asio::buffer(*buffer),
+                [this, buffer, destConnection](const asio::error_code& ec, std::size_t /*bytes_transferred*/) {
+                    if (ec) {
+                        std::cerr << "Broadcast failed to client: " << ec.message() << "\n";
+                        this->_disconnect(destConnection);
+                    }
+                }
+            );
+        }
+    }
+}
+
 void TCPServer::_accept() {
     auto newConnection = std::make_shared<TCPConnection>(this->_ioContext);
 
-    this->_acceptor.async_accept(newConnection->socket(), [this, newConnection](const asio::error_code& error) {
-        if (!error) {
-            std::cout << "New connection accepted.\n";
-            this->_connections.push_back(newConnection);
-            this->_readMessage(newConnection);
-        } else {
-            std::cerr << "Accept error: " << error.message() << "\n";
-        }
-
-        this->_accept();
-    });
+    this->_acceptor.async_accept(newConnection->socket(),
+        [this, newConnection](const asio::error_code& error) {
+            if (!error) {
+                std::cout << "New connection accepted.\n";
+                this->_connections.push_back(newConnection);
+                this->_readMessage(newConnection);
+            } else {
+                std::cerr << "Error accepting connection: " << error.message() << "\n";
+            }
+            this->_accept();
+        });
 }
 
 void TCPServer::_readMessage(std::shared_ptr<TCPConnection> connection) {
     auto buffer = std::make_shared<std::array<char, 1024>>();
+
     connection->socket().async_read_some(asio::buffer(*buffer), [this, connection, buffer](const asio::error_code& error, std::size_t bytes_transferred) {
         if (!error) {
             std::string message(buffer->data(), bytes_transferred);
-            std::cout << "Received message: " << message << "\n";
- 
-            if (message == "EXIT") {
-                std::cout << "Client disconnected.\n";
-                // Remove the connection from the list of active connections
-                this->_connections.erase(std::find(this->_connections.begin(), this->_connections.end(), connection));
-                connection->socket().close();
-                return;
+            try {
+                nlohmann::json jsonMessage = nlohmann::json::parse(message);
+                if (jsonMessage.contains("playerId")) {
+                    connection->setUserId(jsonMessage["playerId"].get<int>());
+                }
+                std::string command = jsonMessage["command"].get<std::string>();
+                
+                if (command == "EXIT") {
+                    std::cout << "Client " << connection->userId() << " disconnected.\n";
+                    this->_disconnect(connection);
+                } else {
+                    auto position = jsonMessage["position"].get<Position>();
+                    this->_broadcast(position, connection);
+                }
+            } catch (const std::exception& e) {
+                std::cerr << "Error: " << e.what() << "\n";
             }
- 
+
             this->_readMessage(connection);
         } else {
             std::cerr << "Error reading message: " << error.message() << "\n";
- 
-            // Remove the connection from the list of active connections
-            this->_connections.erase(std::find(this->_connections.begin(), this->_connections.end(), connection));
-            connection->socket().close();
+            this->_disconnect(connection);
         }
     });
+
 }

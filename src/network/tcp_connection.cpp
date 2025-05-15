@@ -9,3 +9,11 @@ tcp::socket& TCPConnection::socket() {
 TCPConnection::TCPConnection(asio::io_context &ioContext) :
     _socket(ioContext)
 {}
+
+int TCPConnection::userId() const {
+    return this->_userId;
+}
+
+void TCPConnection::setUserId(int userId) {
+    this->_userId = userId;
+}

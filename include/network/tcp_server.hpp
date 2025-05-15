@@ -1,9 +1,10 @@
 #pragma once
 
+#include "network/tcp_connection.hpp"
+#include "models/position.hpp"
 #include <string>
 #include <asio.hpp>
 #include <vector>
-#include "network/tcp_connection.hpp"
 
 class TCPServer {
 private:
@@ -14,7 +15,20 @@ private:
 
     void _accept();
     void _readMessage(std::shared_ptr<TCPConnection> connection);
+
+    /**
+     * Broadcasts a message to all connected clients except the source connection.
+     * @param pos The position to broadcast.
+     * @param connection The connection that sent the message.
+     */
+    void _broadcast(const Position& pos, std::shared_ptr<TCPConnection> sourceConnection);
+
+    /**
+     * Removes a connection from the server and closes the socket.
+     * @param connection The connection to disconnect.
+     */
+    void _disconnect(std::shared_ptr<TCPConnection> connection);
 public:
     TCPServer(int port);
-    void start();
+    void start(void (*onServerStarted)());
 };

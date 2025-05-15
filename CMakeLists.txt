@@ -7,6 +7,8 @@ project(MyGame)
 # TODO: understand why we need these commands
 find_package(fmt REQUIRED)
 find_package(asio REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
+# find_package(mysql_connector_cpp CONFIG REQUIRED)
 
 # Include the directory where the header files are located
 include_directories(include)
@@ -22,6 +24,11 @@ add_executable(mygame ${SOURCES})
 # TODO: understand why we need these commands
 target_link_libraries(mygame PRIVATE fmt::fmt)
 target_link_libraries(mygame PRIVATE asio::asio)
+target_link_libraries(mygame PRIVATE nlohmann_json::nlohmann_json)
+# target_link_libraries(mygame PRIVATE mysqlcppconn) TODO: check bug!
 
 # Set the C++ standard for the project (C++20 in this case)
-set(CMAKE_CXX_STANDARD 20)
+# set(CMAKE_CXX_STANDARD 20)
+# set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++20") # for MSVC
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20") # for GCC/Clang
