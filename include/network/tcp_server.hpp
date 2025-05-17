@@ -10,7 +10,7 @@ class TCPServer {
 private:
     int _port;
     asio::io_context _ioContext;
-    asio::ip::tcp::acceptor _acceptor;
+    std::shared_ptr<asio::ip::tcp::acceptor> _acceptor;
     std::vector<std::shared_ptr<TCPConnection>> _connections;
 
     void _accept();
@@ -29,6 +29,6 @@ private:
      */
     void _disconnect(std::shared_ptr<TCPConnection> connection);
 public:
-    TCPServer(int port);
-    void start(void (*onServerStarted)());
+    TCPServer();
+    void run(int port, void (*onServerStarted)());
 };

@@ -8,13 +8,14 @@
 
 using asio::ip::tcp;
 
-TCPServer::TCPServer(int port) : 
-    _port(port),
-    _acceptor(tcp::acceptor(this->_ioContext, tcp::endpoint(tcp::v4(), port)))
+TCPServer::TCPServer()
+: _acceptor(NULL), _port(0)
 {}
 
-void TCPServer::start(void (*onServerStarted)())
+void TCPServer::run(int port, void (*onServerStarted)()) 
 {
+    this->_port = port;
+    this->_acceptor = std::make_shared<tcp::acceptor>(this->_ioContext, tcp::endpoint(tcp::v4(), this->_port));
     try {
         this->_accept();
         if (onServerStarted) {
@@ -63,7 +64,7 @@ void TCPServer::_broadcast(const Position &pos, std::shared_ptr<TCPConnection> s
 void TCPServer::_accept() {
     auto newConnection = std::make_shared<TCPConnection>(this->_ioContext);
 
-    this->_acceptor.async_accept(newConnection->socket(),
+    this->_acceptor->async_accept(newConnection->socket(),
         [this, newConnection](const asio::error_code& error) {
             if (!error) {
                 std::cout << "New connection accepted.\n";
