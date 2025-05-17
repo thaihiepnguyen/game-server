@@ -13,11 +13,29 @@ const std::string DB_JSON_PATH = "../configs/db.json";
 int main() {
     TCPServer tcpServer;
 
-    tcpServer.run(PORT, []() {
-        DbConfig dbconfig(DB_JSON_PATH);
+    DbConfig dbconfig(DB_JSON_PATH);
+    auto conn = MysqlConnection::instance();
 
-        MysqlConnection conn(dbconfig);
-        conn.connect();
+    conn->connect(dbconfig);
+
+    if (!conn->isConnected()) {
+        std::cerr << "Failed to connect to the database.\n";
+        return 1;
+    }
+    std::cout << "Connected to the database.\n";
+
+    auto res = conn->session()->sql("SELECT * FROM test_table").execute();
+    // Handle the result of the query here
+    
+    // For example, you can iterate over the rows:
+    for (auto row : res) {
+        std::cout << "User ID: " << row[0].get<int>() << ", Name: " << row[1].get<std::string>() << "\n";
+    }
+    conn->disconnect(); // Disconnect from the database
+
+    tcpServer.run(PORT, []() {        
+        // Start the TCP server
+
         std::cout << "Server started on port " << PORT << "\n";
     });
     

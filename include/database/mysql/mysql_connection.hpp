@@ -8,31 +8,14 @@
 
 class MysqlConnection : public DBConnection<mysqlx::Session> {
 private:
-    std::shared_ptr<mysqlx::Session> _db;
-
+    inline static std::shared_ptr<MysqlConnection> _instance = NULL;
+    std::shared_ptr<mysqlx::Session> _session;
+    MysqlConnection() : _session(NULL) {}
 public:
-    MysqlConnection(const DbConfig& config) : DBConnection(config), _db(NULL) {}
-    ~MysqlConnection() override {
-        disconnect();
-    }
+    ~MysqlConnection() override;
 
-    bool connect() override {
-        try {
-            this->_db = std::make_shared<mysqlx::Session>(_config.host(), _config.port(), _config.user(), _config.password());
-        } catch (const std::exception& e) {
-            std::cerr << "Error: " << e.what() << "\n";
-            this->_connected = false;
-            return false;
-        }
-        this->_connected = true;
-        return true;
-    }
-
-    void disconnect() override {
-        this->_connected = false;
-    }
-
-    std::shared_ptr<mysqlx::Session> database() override {
-        return this->_db;
-    }
+    bool connect(const DbConfig& config) override;
+    void disconnect() override;
+    std::shared_ptr<mysqlx::Session> session() override;
+    static std::shared_ptr<MysqlConnection> instance();
 };

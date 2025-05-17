@@ -5,20 +5,18 @@ class DBConnection {
 protected:
     DbConfig _config;
     bool _connected;
+    DBConnection();
 public:
-    DBConnection(const DbConfig& config);
     virtual ~DBConnection() = default;
 
-    virtual bool connect() = 0;
+    virtual bool connect(const DbConfig& config) = 0;
     virtual void disconnect() = 0;
     bool isConnected() const;
-    virtual std::shared_ptr<T> database() = 0;
+    virtual std::shared_ptr<T> session() = 0;
 };
 
 template <typename T>
-DBConnection<T>::DBConnection(const DbConfig& config) {
-    this->_config = config;
-}
+DBConnection<T>::DBConnection() : _config(), _connected(false) {}
 
 template <typename T>
 bool DBConnection<T>::isConnected() const {
