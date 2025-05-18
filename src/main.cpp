@@ -24,14 +24,16 @@ int main() {
     }
     std::cout << "Connected to the database.\n";
 
-    auto res = conn->session()->sql("SELECT * FROM test_table").execute();
-    // Handle the result of the query here
-    
-    // For example, you can iterate over the rows:
-    for (auto row : res) {
-        std::cout << "User ID: " << row[0].get<int>() << ", Name: " << row[1].get<std::string>() << "\n";
+    auto res = conn->execute("SELECT * FROM test_table"); // Example query
+    std::cout << "Executed query on the database.\n";
+
+    // Process the result
+    for (const auto& row : res.rows()) {
+        for (const auto& field : row) {
+            std::cout << std::get<std::string>(field) << " "; // Assuming all fields are strings
+        }
+        std::cout << "\n";
     }
-    conn->disconnect(); // Disconnect from the database
 
     tcpServer.run(PORT, []() {        
         // Start the TCP server

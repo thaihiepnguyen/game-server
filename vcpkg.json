@@ -5,6 +5,6 @@
     "fmt",
     "asio",
     "nlohmann-json",
-    "mysql-connector-cpp"
+    "libmysql"
   ]
 }

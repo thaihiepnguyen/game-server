@@ -2,13 +2,13 @@
 cmake_minimum_required(VERSION 3.31.6)
 
 # Define the name of the project
-project(MyGame)
+project(MyGame LANGUAGES CXX)
 
 # TODO: understand why we need these commands
 find_package(fmt REQUIRED)
 find_package(asio REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
-find_package(unofficial-mysql-connector-cpp CONFIG REQUIRED)
+find_package(unofficial-libmysql REQUIRED)
 
 # Include the directory where the header files are located
 include_directories(include)
@@ -26,11 +26,14 @@ target_link_libraries(mygame PRIVATE
     fmt::fmt
     asio::asio
     nlohmann_json::nlohmann_json
-    unofficial::mysql-connector-cpp::connector
+    unofficial::libmysql::libmysql
 )
+
+target_compile_features(mygame PRIVATE cxx_std_20)
 
 # Set the C++ standard for the project (C++20 in this case)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++20") # for MSVC
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20") # for GCC/Clang
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}") # for GCC/Clang

@@ -2,50 +2,76 @@
 
 
 MysqlConnection::~MysqlConnection() {
-    // In case the destructor is called, we should ensure that the connection is closed.
+    // In case the connection is not closed, close it
     disconnect();
 }
 
 bool MysqlConnection::connect(const DbConfig& config) {
-    try {
-        this->_session = std::make_shared<mysqlx::Session>(config.host(), config.port(), config.user(), config.password());
-        this->_config = config;
+    if (this->_conn == NULL) {
+        std::cerr << "MySQL connection is not initialized. \n";
+        return false;
+    }
 
-        if (!this->_session) {
-            throw std::runtime_error("Failed to create MySQL session.");
-        }
-
-        this->_session->sql("USE " + config.database()).execute();
-    } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << "\n";
-        this->_connected = false;
+    if (mysql_real_connect(
+        this->_conn, 
+        config.host().c_str(), 
+        config.user().c_str(), 
+        config.password().c_str(), 
+        config.database().c_str(), 0, NULL, 0) == NULL
+    ) {
+        std::cerr << "mysql_real_connect() failed: " << mysql_error(this->_conn) << "\n";
         return false;
     }
     this->_connected = true;
+    this->_config = config;
+    std::cout << "Connected to MySQL database successfully! \n";
     return true;
 }
 
 void MysqlConnection::disconnect() {
-    if (this->_connected && this->_session) {
-        try {
-            this->_session->close();
-            this->_connected = false;
-        } catch (const std::exception& e) {
-            std::cerr << "Error closing session: " << e.what() << "\n";
-        }
+    if (!this->isConnected()) {
+        return;
     }
+    mysql_close(this->_conn);
 }
 
-std::shared_ptr<mysqlx::Session> MysqlConnection::session() {
-    if (!this->_connected || !this->_session) {
-        throw std::runtime_error("Not connected to the database.");
-    }
-    return this->_session;
-}
-
-std::shared_ptr<MysqlConnection> MysqlConnection::instance() {
+std::shared_ptr<DBConnection> MysqlConnection::instance() {
     if (!_instance) {
         _instance = std::shared_ptr<MysqlConnection>(new MysqlConnection());
     }
     return _instance;
+}
+
+RowResult MysqlConnection::execute(const std::string& query) {
+    if (!this->isConnected()) {
+        throw std::runtime_error("Not connected to the database.");
+    }
+
+    if (mysql_query(this->_conn, query.c_str())) {
+        throw std::runtime_error("MySQL query failed: " + std::string(mysql_error(this->_conn)));
+    }
+
+    RowResult rowResult;
+    MYSQL_RES* result = mysql_store_result(this->_conn);
+    if (result == NULL) {
+        throw std::runtime_error("MySQL store result failed: " + std::string(mysql_error(this->_conn)));
+    }
+
+    MYSQL_ROW row;
+    while ((row = mysql_fetch_row(result))) {
+        RowResult::Row rowData;
+
+        for (unsigned int i = 0; i < mysql_num_fields(result); ++i) {
+            rowData.push_back(row[i] ? row[i] : NULL);
+        }
+
+        rowResult.addRow(rowData);
+    }
+
+    mysql_free_result(result);
+    return rowResult;
+}
+
+bool MysqlConnection::isConnected() const {
+    return this->_conn != NULL && this->_connected;
 }
