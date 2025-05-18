@@ -8,7 +8,6 @@
 
 class MysqlConnection : public DBConnection {
 private:
-    inline static std::shared_ptr<DBConnection> _instance = NULL;
     MYSQL* _conn;
     MysqlConnection() : _conn(mysql_init(NULL)) {}
 public:

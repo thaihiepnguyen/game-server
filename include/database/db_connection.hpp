@@ -5,6 +5,7 @@
 
 class DBConnection {
 protected:
+    inline static std::shared_ptr<DBConnection> _instance = NULL;
     bool _connected = false;
     DbConfig _config;
     DBConnection();
