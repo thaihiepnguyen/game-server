@@ -17,7 +17,8 @@ bool MysqlConnection::connect(const DbConfig& config) {
         config.host().c_str(), 
         config.user().c_str(), 
         config.password().c_str(), 
-        config.database().c_str(), 0, NULL, 0) == NULL
+        config.database().c_str(),
+        config.port(), NULL, 0) == NULL
     ) {
         std::cerr << "mysql_real_connect() failed: " << mysql_error(this->_conn) << "\n";
         return false;
@@ -32,6 +33,7 @@ void MysqlConnection::disconnect() {
     if (!this->isConnected()) {
         return;
     }
+    this->_connected = false;
     mysql_close(this->_conn);
 }
 
