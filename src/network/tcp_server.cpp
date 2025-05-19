@@ -4,6 +4,7 @@
 #include <iostream>
 #include <memory>
 #include <nlohmann/json.hpp>
+#include "protocol/protocol.hpp"
 
 
 using asio::ip::tcp;
@@ -78,34 +79,24 @@ void TCPServer::_accept() {
 }
 
 void TCPServer::_readMessage(std::shared_ptr<TCPConnection> connection) {
-    auto buffer = std::make_shared<std::array<char, 1024>>();
+    asio::async_read_until(
+        connection->socket(),
+        connection->streambuf(),
+        '\n',
+        [this, connection](const asio::error_code& error, std::size_t bytes_transferred) {
+            if (!error) {
+                std::istream is(&connection->streambuf());
+                std::string message;
+                std::getline(is, message);
 
-    connection->socket().async_read_some(asio::buffer(*buffer), [this, connection, buffer](const asio::error_code& error, std::size_t bytes_transferred) {
-        if (!error) {
-            std::string message(buffer->data(), bytes_transferred);
-            try {
-                nlohmann::json jsonMessage = nlohmann::json::parse(message);
-                if (jsonMessage.contains("playerId")) {
-                    connection->setUserId(jsonMessage["playerId"].get<int>());
-                }
-                std::string command = jsonMessage["command"].get<std::string>();
-                
-                if (command == "EXIT") {
-                    std::cout << "Client " << connection->userId() << " disconnected.\n";
-                    this->_disconnect(connection);
-                } else {
-                    auto position = jsonMessage["position"].get<Position>();
-                    this->_broadcast(position, connection);
-                }
-            } catch (const std::exception& e) {
-                std::cerr << "Error: " << e.what() << "\n";
+                Protocol::Packet packet = Protocol::decode(message);
+
+                std::cout << "Received message: " << packet.toString() << ' ' << message << "\n";
+
+                this->_readMessage(connection);
+            } else {
+                std::cerr << "Error reading message: " << error.message() << "\n";
+                this->_disconnect(connection);
             }
-
-            this->_readMessage(connection);
-        } else {
-            std::cerr << "Error reading message: " << error.message() << "\n";
-            this->_disconnect(connection);
-        }
-    });
-
+        });
 }

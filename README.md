@@ -25,3 +25,19 @@ make
 ```
 ./mygame
 ```
+
+### 5. Architecture
+
+```
+[Network Layer]       // TCP socket, WebSocket
+        ⇅
+[Protocol Layer]      // Encode/decode message packets
+        ⇅
+[Game Logic Layer]    // Session, combat, chat, world updates, etc.
+        ⇅
+[Service Layer]       // Business logic (optional layer)
+        ⇅
+[DAO Layer]           // Truy xuất dữ liệu từ DB
+        ⇅
+[Database]            // MySQL, PostgreSQL, Redis, etc.
+```

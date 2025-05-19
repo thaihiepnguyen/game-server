@@ -8,10 +8,12 @@ class TCPConnection {
 private:
     tcp::socket _socket;
     int _userId;
+    asio::streambuf _streambuf;
 
 public:
     tcp::socket& socket();
     TCPConnection(asio::io_context &io_context);
     int userId() const;
     void setUserId(int userId);
+    asio::streambuf& streambuf() { return _streambuf; }
 };
