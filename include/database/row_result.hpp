@@ -2,7 +2,6 @@
 
 #include <vector>
 #include <string>
-#include <unordered_map>
 #include <variant>
 #include <cstdint>
 #include <memory>
@@ -10,7 +9,7 @@
 
 class RowResult {
 public:
-    using Value = std::variant<int64_t, double, std::string, bool, std::nullptr_t>;
+    using Value = std::optional<std::variant<int64_t, double, std::string, bool, std::nullptr_t>>;
     using Row = std::vector<Value>;
 
     RowResult() = default;

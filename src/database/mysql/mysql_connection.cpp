@@ -56,15 +56,18 @@ RowResult MysqlConnection::execute(const std::string& query) {
     RowResult rowResult;
     MYSQL_RES* result = mysql_store_result(this->_conn);
     if (result == NULL) {
-        throw std::runtime_error("MySQL store result failed: " + std::string(mysql_error(this->_conn)));
+        return rowResult; // No result set
     }
 
     MYSQL_ROW row;
     while ((row = mysql_fetch_row(result))) {
         RowResult::Row rowData;
-
         for (unsigned int i = 0; i < mysql_num_fields(result); ++i) {
-            rowData.push_back(row[i] ? row[i] : NULL);
+            if (row[i] == NULL) {
+                rowData.push_back(std::nullopt);
+                continue;
+            }
+            rowData.push_back(row[i]);
         }
 
         rowResult.addRow(rowData);

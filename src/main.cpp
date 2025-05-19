@@ -24,15 +24,19 @@ int main() {
     }
     std::cout << "Connected to the database.\n";
 
-    auto res = conn->execute("SELECT * FROM test_table"); // Example query
-    std::cout << "Executed query on the database.\n";
+    try {
+        auto res = conn->execute("SELECT * FROM test_table");
+        std::cout << "Executed query on the database.\n";
 
-    // Process the result
-    for (const auto& row : res.rows()) {
-        for (const auto& field : row) {
-            std::cout << std::get<std::string>(field) << " "; // Assuming all fields are strings
+        // Process the result
+        for (const auto& row : res.rows()) {
+            for (const auto& field : row) {
+                std::cout << std::get<std::string>(*field) << " ";
+            }
+            std::cout << "\n";
         }
-        std::cout << "\n";
+    } catch (const std::exception& e) {
+        std::cerr << "Error executing query: " << e.what() << "\n";
     }
 
     tcpServer.run(PORT, []() {        
