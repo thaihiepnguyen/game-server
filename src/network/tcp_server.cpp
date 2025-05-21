@@ -13,8 +13,7 @@ TCPServer::TCPServer()
 : _acceptor(NULL), _port(0)
 {}
 
-void TCPServer::run(int port, void (*onServerStarted)()) 
-{
+void TCPServer::run(int port, void (*onServerStarted)()) {
     this->_port = port;
     this->_acceptor = std::make_shared<tcp::acceptor>(this->_ioContext, tcp::endpoint(tcp::v4(), this->_port));
     try {
@@ -28,17 +27,7 @@ void TCPServer::run(int port, void (*onServerStarted)())
     }
 }
 
-void TCPServer::_disconnect(std::shared_ptr<TCPConnection> connection)
-{
-    auto it = std::find(this->_connections.begin(), this->_connections.end(), connection);
-    if (it != this->_connections.end()) {
-        this->_connections.erase(it);
-        connection->socket().close();
-    }
-}
-
-void TCPServer::_broadcast(const Position &pos, std::shared_ptr<TCPConnection> sourceConnection)
-{
+void TCPServer::_broadcast(const Position &pos, std::shared_ptr<TCPConnection> sourceConnection) {
     for (const auto& destConnection : this->_connections) {
         if (destConnection != sourceConnection) {
             nlohmann::json jsonMessage;
@@ -54,7 +43,6 @@ void TCPServer::_broadcast(const Position &pos, std::shared_ptr<TCPConnection> s
                 [this, buffer, destConnection](const asio::error_code& ec, std::size_t /*bytes_transferred*/) {
                     if (ec) {
                         std::cerr << "Broadcast failed to client: " << ec.message() << "\n";
-                        this->_disconnect(destConnection);
                     }
                 }
             );
@@ -70,33 +58,14 @@ void TCPServer::_accept() {
             if (!error) {
                 std::cout << "New connection accepted.\n";
                 this->_connections.push_back(newConnection);
-                this->_readMessage(newConnection);
+                newConnection->addOnDisconnectListener([this](std::shared_ptr<TCPConnection> connection) {
+                    this->_connections.erase(std::remove(this->_connections.begin(), this->_connections.end(), connection), this->_connections.end());
+                });
+
+                newConnection->readMessage();
             } else {
                 std::cerr << "Error accepting connection: " << error.message() << "\n";
             }
             this->_accept();
-        });
-}
-
-void TCPServer::_readMessage(std::shared_ptr<TCPConnection> connection) {
-    asio::async_read_until(
-        connection->socket(),
-        connection->streambuf(),
-        '\n',
-        [this, connection](const asio::error_code& error, std::size_t bytes_transferred) {
-            if (!error) {
-                std::istream is(&connection->streambuf());
-                std::string message;
-                std::getline(is, message);
-
-                Protocol::Packet packet = Protocol::decode(message);
-
-                std::cout << "Received message: " << packet.toString() << ' ' << message << "\n";
-
-                this->_readMessage(connection);
-            } else {
-                std::cerr << "Error reading message: " << error.message() << "\n";
-                this->_disconnect(connection);
-            }
         });
 }

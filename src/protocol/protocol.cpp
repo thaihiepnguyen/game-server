@@ -3,45 +3,79 @@
 
 namespace Protocol {
     std::string encode(const Packet& packet) {
-        nlohmann::json json;
-        json["command"] = static_cast<unsigned short>(packet.command);
-        for (const auto& [key, value] : packet.data) {
-            if (value.has_value()) {
-                if (std::holds_alternative<int64_t>(value.value())) {
-                    json["data"][key] = std::get<int64_t>(value.value());
-                } else if (std::holds_alternative<double>(value.value())) {
-                    json["data"][key] = std::get<double>(value.value());
-                } else if (std::holds_alternative<std::string>(value.value())) {
-                    json["data"][key] = std::get<std::string>(value.value());
-                } else if (std::holds_alternative<bool>(value.value())) {
-                    json["data"][key] = std::get<bool>(value.value());
+        nlohmann::json j;
+        j["command"] = static_cast<unsigned short>(packet.command);
+
+        // Recursive lambda to convert Protocol::Value to nlohmann::json
+        std::function<nlohmann::json(const Value&)> to_json;
+        to_json = [&](const Value& val) -> nlohmann::json {
+            if (std::holds_alternative<std::monostate>(val)) return nullptr;
+            if (std::holds_alternative<int64_t>(val)) return std::get<int64_t>(val);
+            if (std::holds_alternative<double>(val)) return std::get<double>(val);
+            if (std::holds_alternative<std::string>(val)) return std::get<std::string>(val);
+            if (std::holds_alternative<bool>(val)) return std::get<bool>(val);
+            if (std::holds_alternative<Protocol::Object>(val)) {
+                nlohmann::json obj = nlohmann::json::object();
+                for (const auto& [key, nestedVal] : std::get<Protocol::Object>(val)) {
+                    obj[key] = to_json(nestedVal);
                 }
-            } else {
-                json["data"][key] = nullptr;
+                return obj;
             }
+            if (std::holds_alternative<Protocol::Array>(val)) {
+                nlohmann::json arr = nlohmann::json::array();
+                for (const auto& item : std::get<Protocol::Array>(val)) {
+                    arr.push_back(to_json(item));
+                }
+                return arr;
+            }
+            return nullptr; // Fallback
+        };
+
+        // Serialize data field
+        nlohmann::json j_data = nlohmann::json::object();
+        for (const auto& [key, val] : packet.data) {
+            j_data[key] = to_json(val);
         }
-        return json.dump();
+
+        j["data"] = j_data;
+        return j.dump();
     }
 
     Packet decode(const std::string& jsonString) {
-        auto json = nlohmann::json::parse(jsonString);
-        Command cmd = static_cast<Command>(json["command"].get<unsigned short>());
-        std::map<std::string, Value> data;
+        nlohmann::json j = nlohmann::json::parse(jsonString);
+        Command command = static_cast<Command>(j["command"].get<unsigned short>());
+        Object data;
 
-        for (auto& [key, value] : json["data"].items()) {
-            if (value.is_null()) {
-                data[key] = std::nullopt;
-            } else if (value.is_boolean()) {
-                data[key] = value.get<bool>();
-            } else if (value.is_number_integer()) {
-                data[key] = value.get<int64_t>();
-            } else if (value.is_number_float()) {
-                data[key] = value.get<double>();
-            } else if (value.is_string()) {
-                data[key] = value.get<std::string>();
+        // Recursive lambda to convert nlohmann::json to Protocol::Value
+        std::function<Value(const nlohmann::json&)> from_json;
+        from_json = [&](const nlohmann::json& j) -> Value {
+            if (j.is_null()) return std::monostate{};
+            if (j.is_number_integer()) return j.get<int64_t>();
+            if (j.is_number_float()) return j.get<double>();
+            if (j.is_string()) return j.get<std::string>();
+            if (j.is_boolean()) return j.get<bool>();
+            if (j.is_object()) {
+                Object obj;
+                for (auto it = j.begin(); it != j.end(); ++it) {
+                    obj[it.key()] = from_json(it.value());
+                }
+                return obj;
             }
+            if (j.is_array()) {
+                Array arr;
+                for (const auto& item : j) {
+                    arr.push_back(from_json(item));
+                }
+                return arr;
+            }
+            return std::monostate{};
+        };
+
+        // Deserialize data field
+        for (auto it = j["data"].begin(); it != j["data"].end(); ++it) {
+            data[it.key()] = from_json(it.value());
         }
 
-        return Packet(cmd, data);
+        return Packet(command, data);
     }
 }

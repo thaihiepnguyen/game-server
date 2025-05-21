@@ -10,9 +10,9 @@ services:
       MYSQL_PASSWORD: password
     ports:
       - "3306:3306"
-      - "33060:33060"
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./sql:/docker-entrypoint-initdb.d:ro # copy SQL files to initdb
 
 volumes:
   mysql_data:

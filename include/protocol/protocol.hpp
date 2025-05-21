@@ -8,24 +8,32 @@
 
 namespace Protocol {
     struct Packet;
+    struct Value;
+
     Packet decode(const std::string& jsonString);
     std::string encode(const Packet& packet);
     
-    using Value = std::optional<std::variant<int64_t, double, std::string, bool, std::nullptr_t>>;
+    using Object = std::map<std::string, Value>;
+    using Array = std::vector<Value>;
+
+    struct Value : std::variant<
+        std::monostate,
+        int64_t,
+        double,
+        std::string,
+        bool,
+        Object,
+        Array
+    > {
+        using variant::variant;
+    };
 
     enum class Command : unsigned short {
         // Client to Server
-        LOGIN = 100,
-        LOGOUT = 103,
-        SEND_MESSAGE,
-        GET_MESSAGES,
-        GET_USERS,
+        SIGN_UP = 1,
+
 
         // Server to Client
-        LOGIN_SUCCESS,
-        LOGIN_FAILURE,
-        MESSAGE_RECEIVED,
-        USERS_LIST,
     };
 
     struct Packet {

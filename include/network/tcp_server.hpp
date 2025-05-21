@@ -14,7 +14,6 @@ private:
     std::vector<std::shared_ptr<TCPConnection>> _connections;
 
     void _accept();
-    void _readMessage(std::shared_ptr<TCPConnection> connection);
 
     /**
      * Broadcasts a message to all connected clients except the source connection.
@@ -22,12 +21,6 @@ private:
      * @param connection The connection that sent the message.
      */
     void _broadcast(const Position& pos, std::shared_ptr<TCPConnection> sourceConnection);
-
-    /**
-     * Removes a connection from the server and closes the socket.
-     * @param connection The connection to disconnect.
-     */
-    void _disconnect(std::shared_ptr<TCPConnection> connection);
 public:
     TCPServer();
     void run(int port, void (*onServerStarted)());
