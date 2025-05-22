@@ -13,7 +13,7 @@
 #include "core/repository/repository_register.hpp"
 
 class MMORPGApplication {
-public:
+private:
     short _port;
     std::shared_ptr<ICommand> _authMiddleware;
 
