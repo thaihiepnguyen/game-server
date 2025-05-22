@@ -1,16 +1,15 @@
 #pragma once
 
-#include "database/db_config.hpp"
-#include "database/row_result.hpp"
+#include "core/database/db_config.hpp"
+#include "core/database/row_result.hpp"
 
-class DBConnection {
+class IDatabaseConnection {
 protected:
-    inline static std::shared_ptr<DBConnection> _instance = NULL;
     bool _connected = false;
     DbConfig _config;
-    DBConnection();
 public:
-    virtual ~DBConnection() = default;
+    IDatabaseConnection();
+    virtual ~IDatabaseConnection() = default;
 
     virtual bool connect(const DbConfig& config) = 0;
     virtual void disconnect() = 0;

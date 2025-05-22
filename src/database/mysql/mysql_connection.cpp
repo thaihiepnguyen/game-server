@@ -24,8 +24,9 @@ bool MysqlConnection::connect(const DbConfig& config) {
         return false;
     }
     this->_connected = true;
+
     this->_config = config;
-    std::cout << "Connected to MySQL database successfully! \n";
+    std::cout << "\033[32m" << "Connected to MySQL database successfully: "  << config.host() << ':' << config.port() << "\n" << "\033[0m";
     return true;
 }
 
@@ -35,13 +36,6 @@ void MysqlConnection::disconnect() {
     }
     this->_connected = false;
     mysql_close(this->_conn);
-}
-
-std::shared_ptr<DBConnection> MysqlConnection::instance() {
-    if (!_instance) {
-        _instance = std::shared_ptr<MysqlConnection>(new MysqlConnection());
-    }
-    return _instance;
 }
 
 RowResult MysqlConnection::execute(const std::string& query) {
@@ -64,7 +58,7 @@ RowResult MysqlConnection::execute(const std::string& query) {
         RowResult::Row rowData;
         for (unsigned int i = 0; i < mysql_num_fields(result); ++i) {
             if (row[i] == NULL) {
-                rowData.push_back(std::nullopt);
+                rowData.push_back(std::monostate{});
                 continue;
             }
             rowData.push_back(row[i]);

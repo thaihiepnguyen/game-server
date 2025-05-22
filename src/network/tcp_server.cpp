@@ -4,7 +4,7 @@
 #include <iostream>
 #include <memory>
 #include <nlohmann/json.hpp>
-#include "protocol/protocol.hpp"
+#include "core/protocol/protocol.hpp"
 
 
 using asio::ip::tcp;

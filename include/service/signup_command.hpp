@@ -1,4 +1,4 @@
-#include "service/command.hpp"
+#include "core/command/command.hpp"
 
 
 class SignupCommand : public ICommand {

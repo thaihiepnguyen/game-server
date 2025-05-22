@@ -1,7 +1,7 @@
 #include "network/tcp_connection.hpp"
 #include <asio.hpp>
-#include "protocol/protocol.hpp"
-#include "service/command.hpp"
+#include "core/protocol/protocol.hpp"
+#include "core/command/command.hpp"
 #include "service/signup_command.hpp"
 
 using asio::ip::tcp;
