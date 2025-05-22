@@ -22,14 +22,14 @@ void TCPConnection::setUserId(int userId) {
     this->_userId = userId;
 }
 
-void TCPConnection::readMessage() {
+void TCPConnection::readMessage(std::function<std::unordered_map<std::string, Protocol::Value>(const Protocol::Packet&)> handleCommand) {
     auto self = shared_from_this();
 
     asio::async_read_until(
         this->socket(),
         this->streambuf(),
         '\n',
-        [self](const asio::error_code& error, std::size_t bytes_transferred) {
+        [self, handleCommand](const asio::error_code& error, std::size_t bytes_transferred) {
             if (!error) {
                 std::istream is(&self->streambuf());
                 std::string message;
@@ -41,13 +41,8 @@ void TCPConnection::readMessage() {
                     
                     // Handle the packet based on its command
                     if (packet.command == Protocol::Command::SIGN_UP) {
-                        // Create a new command handler
-                        std::shared_ptr<ICommand> handler = std::make_shared<SignupCommand>();
-                        // Execute the command with the provided data
-                        auto response = handler->execute(packet.data);
-                        // Prepare the response packet
+                        auto response = handleCommand(packet);
                         Protocol::Packet responsePacket(packet.command, response);
-                        // Encode the response packet to JSON
                         std::string jsonString = Protocol::encode(responsePacket);
                         std::cout << "Sending response: " << jsonString << "\n";
                         self->writeMessage(jsonString);
@@ -56,9 +51,8 @@ void TCPConnection::readMessage() {
                     std::cerr << "Error decoding message: " << e.what() << "\n";
                     return;
                 }
-                
 
-                self->readMessage();
+                self->readMessage(handleCommand);
             } else {
                 std::cerr << "Error reading message: " << error.message() << "\n";
                 self->disconnect();

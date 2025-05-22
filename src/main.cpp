@@ -6,7 +6,9 @@
 #include "core/mmorpg_app.hpp"
 #include "memory"
 #include "service/signup_command.hpp"
+#include "service/auth_command.hpp"
 #include "core/protocol/protocol.hpp"
+
 
 
 using asio::ip::tcp;
@@ -21,22 +23,23 @@ int main() {
     IDatabaseConnection* dbConnection = new MysqlConnection();
     if (!dbConnection->connect(dbConfig)) {
         std::cerr << "Failed to connect to the database.\n";
+        delete dbConnection;
         return 1;
     }
 
-
-    auto mmorpgApp = std::make_shared<MMORPGApplication>(PORT);
+    // Create the MMORPG application
+    MMORPGApplication* mmorpgApp = new MMORPGApplication();
     mmorpgApp
         ->registerDatabaseConnection(dbConnection)
+        ->registerAuthMiddleware(new AuthCommand())
+        ->registerRepository(new UserRepository())
         ->registerCommand(Protocol::Command::SIGN_UP, new SignupCommand(), true);
 
-
-    TCPServer tcpServer;
-    tcpServer.run(PORT, []() {        
-        // Start the TCP server
-
-        std::cout << "Server started on port " << PORT << "\n";
-    });
+    std::cout << "Server is running on port " << PORT << "\n";
+    // Run the server
+    mmorpgApp->listen(PORT);
     
+    // Clean up
+    delete mmorpgApp;
     return 0;
 }

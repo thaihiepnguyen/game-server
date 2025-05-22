@@ -14,7 +14,7 @@ namespace Protocol {
     Packet decode(const std::string& jsonString);
     std::string encode(const Packet& packet);
     
-    using Object = std::map<std::string, Value>;
+    using Object = std::unordered_map<std::string, Value>;
     using Array = std::vector<Value>;
 
     struct Value : std::variant<
@@ -39,9 +39,9 @@ namespace Protocol {
 
     struct Packet {
         Command command;
-        std::map<std::string, Value> data;
+        std::unordered_map<std::string, Value> data;
 
-        Packet(Command cmd, const std::map<std::string, Value>& d) : command(cmd), data(d) {}
+        Packet(Command cmd, const std::unordered_map<std::string, Value>& d) : command(cmd), data(d) {}
 
         std::string toString() const {
             return Protocol::encode(*this);

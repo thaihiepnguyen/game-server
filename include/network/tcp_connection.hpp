@@ -2,6 +2,7 @@
 
 #include <asio.hpp>
 #include <functional>
+#include "core/protocol/protocol.hpp"
 
 using asio::ip::tcp;
 
@@ -18,7 +19,7 @@ public:
     int userId() const;
     void setUserId(int userId);
     asio::streambuf& streambuf() { return _streambuf; }
-    void readMessage();
+    void readMessage(std::function<std::unordered_map<std::string, Protocol::Value>(const Protocol::Packet&)> handleCommand);
     void writeMessage(const std::string& message);
     void addOnDisconnectListener(std::function<void(std::shared_ptr<TCPConnection>)> callback);
     void disconnect();

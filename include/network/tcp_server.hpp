@@ -5,6 +5,8 @@
 #include <string>
 #include <asio.hpp>
 #include <vector>
+#include <unordered_map>
+#include "core/protocol/protocol.hpp"
 
 class TCPServer {
 private:
@@ -13,7 +15,7 @@ private:
     std::shared_ptr<asio::ip::tcp::acceptor> _acceptor;
     std::vector<std::shared_ptr<TCPConnection>> _connections;
 
-    void _accept();
+    void _accept(std::function<std::unordered_map<std::string, Protocol::Value>(const Protocol::Packet&)> handleCommand);
 
     /**
      * Broadcasts a message to all connected clients except the source connection.
@@ -23,5 +25,5 @@ private:
     void _broadcast(const Position& pos, std::shared_ptr<TCPConnection> sourceConnection);
 public:
     TCPServer();
-    void run(int port, void (*onServerStarted)());
+    void run(int port, std::function<std::unordered_map<std::string, Protocol::Value>(const Protocol::Packet&)> handleCommand);
 };
