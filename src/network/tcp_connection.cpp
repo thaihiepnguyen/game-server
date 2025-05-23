@@ -2,7 +2,6 @@
 #include <asio.hpp>
 #include "core/protocol/protocol.hpp"
 #include "core/command/command.hpp"
-#include "service/signup_command.hpp"
 
 using asio::ip::tcp;
 
@@ -37,14 +36,11 @@ void TCPConnection::readMessage(std::function<std::unordered_map<std::string, Pr
 
                 try {
                     Protocol::Packet packet = Protocol::decode(message);
-                    std::cout << "Received message: " << packet.toString() << "\n";
-                    
                     // Handle the packet based on its command
                     if (packet.command == Protocol::Command::SIGN_UP) {
                         auto response = handleCommand(packet);
                         Protocol::Packet responsePacket(packet.command, response);
                         std::string jsonString = Protocol::encode(responsePacket);
-                        std::cout << "Sending response: " << jsonString << "\n";
                         self->writeMessage(jsonString);
                     }
                 } catch (const std::exception& e) {

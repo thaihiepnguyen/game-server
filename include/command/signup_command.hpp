@@ -1,21 +1,14 @@
+#pragma once
 #include "core/command/command.hpp"
-#include "core/repository/repository_register.hpp"
-#include "core/repository/user_repository.hpp"
+#include "core/service/provider.hpp"
+#include "repository/user_repository.hpp"
 
 
 class SignupCommand : public ICommand {
-private:
-    std::shared_ptr<UserRepository> _userRepository;
-
 public:
-    void inject(std::shared_ptr<RepositoryRegister> repositoryRegister) override {
-        _userRepository = repositoryRegister->getRepository<UserRepository>();
-    }
+    void inject(std::shared_ptr<Provider> provider) override {}
 
     std::unordered_map<std::string, Protocol::Value> execute(const std::unordered_map<std::string, Protocol::Value>& request) override {
-        _userRepository->add("test");
-
-
         std::unordered_map<std::string, Protocol::Value> response;
         if (std::holds_alternative<std::monostate>(request.at("username"))) {
             response["status"] = "error";

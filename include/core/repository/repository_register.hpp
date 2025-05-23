@@ -9,7 +9,7 @@ class RepositoryRegister {
 private:
     std::unordered_map<std::string, std::shared_ptr<IRepository>> repositories;
 public:
-    void registerRepository(std::shared_ptr<IRepository> repository) {
+    void registeRepo(std::shared_ptr<IRepository> repository) {
         if (!repository.get()) {
             throw std::invalid_argument("Repository cannot be null");
         }
@@ -17,7 +17,6 @@ public:
         auto& r = *repository.get();
         std::string name = typeid(r).name();
         
-        std::cout << "Registering repository: " << name << "\n";
         if (repositories.find(name) != repositories.end()) {
             throw std::runtime_error("Repository already registered: " + name);
         }

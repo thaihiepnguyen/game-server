@@ -11,6 +11,7 @@
 #include <functional>
 #include "network/tcp_server.hpp"
 #include "core/repository/repository_register.hpp"
+#include "core/service/provider.hpp"
 
 class MMORPGApplication {
 private:
@@ -23,6 +24,8 @@ private:
     std::shared_ptr<IDatabaseConnection> _dbConnection;
     std::unordered_map<std::string, Protocol::Value> _handleCommand(Protocol::Command id, const std::unordered_map<std::string, Protocol::Value>& request);
     std::shared_ptr<RepositoryRegister> _repositoryRegister;
+    std::shared_ptr<Provider> _provider;
+
     /**
      * Convert a mangled C++ type name to a human-readable format.
      * 
@@ -37,24 +40,28 @@ private:
         std::free(demangled);
         return result;
     }
+
+    void log(const std::string& message) {
+        std::cout << "\033[32m [LOG] " << message << "\033[0m" << "\n";
+    }
 public:
     MMORPGApplication() {
         _repositoryRegister = std::make_shared<RepositoryRegister>();
+        _provider = std::make_shared<Provider>();
     }
 
     MMORPGApplication* registerAuthMiddleware(ICommand* middleware) {
         _authMiddleware = std::shared_ptr<ICommand>(middleware);
 
-        std::cout << "\033[32m" << "Authentication Middleware registered: " 
-            << _demangle(typeid(*middleware).name()) << "\033[0m" << "\n";
+        log("Authentication Middleware registered: " 
+            + _demangle(typeid(*middleware).name()));
         return this;
     }
 
     MMORPGApplication* registerMiddleware(ICommand* middleware) {
         _middlewares.push_back(std::shared_ptr<ICommand>(middleware));
 
-        std::cout << "\033[32m" << "Middleware registered: " 
-            << _demangle(typeid(*middleware).name()) << "\033[0m" << "\n";
+        log("Middleware registered: " + _demangle(typeid(*middleware).name()));
         return this;
     }
 
@@ -66,17 +73,25 @@ public:
         }
         
         _commands[id] = cmdPtr;
-        _commands[id]->inject(_repositoryRegister);
-        std::cout << "\033[32m" << "Command registered: " 
-            << _demangle(typeid(*command).name()) 
-            << " -> command " << static_cast<unsigned int>(id) << "\033[0m" << "\n";
+        _commands[id]->inject(_provider);
+
+
+        log("Command registered: " + _demangle(typeid(*command).name()) + " -> command " + std::to_string(static_cast<unsigned int>(id)));
         return this;
     }
 
     MMORPGApplication* registerRepository(IRepository* repository) {
-        _repositoryRegister->registerRepository(std::shared_ptr<IRepository>(repository));
-        std::cout << "\033[32m" << "Repository registered: " 
-            << _demangle(typeid(*repository).name()) << "\033[0m" << "\n";
+        _repositoryRegister->registeRepo(std::shared_ptr<IRepository>(repository));
+        log("Repository registered: " + _demangle(typeid(*repository).name()));
+        return this;
+    }
+
+    MMORPGApplication* registerService(IService* service) {
+        auto sharedService = std::shared_ptr<IService>(service);
+        _provider->addService(sharedService);
+        sharedService->inject(_repositoryRegister);
+
+        log("Service registered: " + _demangle(typeid(*service).name()));
         return this;
     }
 
@@ -95,7 +110,7 @@ public:
     }
 
     ~MMORPGApplication() {
-        std::cout << "\033[31m" << "MMORPGApplication destructor called\n" << "\033[0m";
+        log("MMORPGApplication destructor called");
         if (_dbConnection) {
             _dbConnection->disconnect();
         }

@@ -5,8 +5,8 @@
 #include "database/mysql/mysql_connection.hpp"
 #include "core/mmorpg_app.hpp"
 #include "memory"
-#include "service/signup_command.hpp"
-#include "service/auth_command.hpp"
+#include "command/signup_command.hpp"
+#include "command/auth_command.hpp"
 #include "core/protocol/protocol.hpp"
 
 
