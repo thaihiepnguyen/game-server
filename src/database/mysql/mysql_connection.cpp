@@ -1,5 +1,5 @@
 #include "database/mysql/mysql_connection.hpp"
-
+#include "core/utils/log.hpp"
 
 MysqlConnection::~MysqlConnection() {
     // In case the connection is not closed, close it
@@ -26,7 +26,7 @@ bool MysqlConnection::connect(const DbConfig& config) {
     this->_connected = true;
 
     this->_config = config;
-    std::cout << "\033[32m" << "Connected to MySQL database successfully: "  << config.host() << ':' << config.port() << "\n" << "\033[0m";
+    Logger::logInfo("MySQL connection established: " + config.host() + ":" + std::to_string(config.port()));
     return true;
 }
 

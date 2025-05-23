@@ -1,6 +1,9 @@
 #include "core/mmorpg_app.hpp"
 
-
+MMORPGApplication::MMORPGApplication() {
+    _repositoryRegister = std::make_shared<RepositoryRegister>();
+    _provider = std::make_shared<Provider>();
+}
 
 std::unordered_map<std::string, Protocol::Value> MMORPGApplication::_handleCommand(Protocol::Command id, const std::unordered_map<std::string, Protocol::Value>& request) {
     auto it = _commands.find(id);
@@ -29,4 +32,71 @@ std::unordered_map<std::string, Protocol::Value> MMORPGApplication::_handleComma
     }
 
     return response;
+}
+
+MMORPGApplication* MMORPGApplication::registerAuthMiddleware(ICommand* middleware) {
+    _authMiddleware = std::shared_ptr<ICommand>(middleware);
+
+    Logger::logInfo("Authentication Middleware registered: " 
+        + String::demangle(typeid(*middleware).name()));
+    return this;
+}
+
+MMORPGApplication* MMORPGApplication::registerMiddleware(ICommand* middleware) {
+    _middlewares.push_back(std::shared_ptr<ICommand>(middleware));
+
+    Logger::logInfo("Middleware registered: " + String::demangle(typeid(*middleware).name()));
+    return this;
+}
+
+MMORPGApplication* MMORPGApplication::registerCommand(Protocol::Command id, ICommand* command, bool isPublic = false) {
+    std::shared_ptr<ICommand> cmdPtr(command);
+
+    if (!isPublic) {
+        _authMap[cmdPtr] = _authMiddleware;
+    }
+    
+    _commands[id] = cmdPtr;
+    _commands[id]->inject(_provider);
+
+
+    Logger::logInfo("Command registered: " + String::demangle(typeid(*command).name()) + " -> command " + std::to_string(static_cast<unsigned int>(id)));
+    return this;
+}
+
+
+MMORPGApplication* MMORPGApplication::registerRepository(IRepository* repository) {
+    _repositoryRegister->registeRepo(std::shared_ptr<IRepository>(repository));
+    Logger::logInfo("Repository registered: " + String::demangle(typeid(*repository).name()));
+    return this;
+}
+
+MMORPGApplication* MMORPGApplication::registerService(IService* service) {
+    auto sharedService = std::shared_ptr<IService>(service);
+    _provider->addService(sharedService);
+    sharedService->inject(_repositoryRegister);
+
+    Logger::logInfo("Service registered: " + String::demangle(typeid(*service).name()));
+    return this;
+}
+
+MMORPGApplication* MMORPGApplication::registerDatabaseConnection(IDatabaseConnection* dbConnection) {
+    _dbConnection = std::shared_ptr<IDatabaseConnection>(dbConnection);
+    return this;
+}
+
+MMORPGApplication* MMORPGApplication::listen(unsigned short port) {
+    _port = port;
+    auto server = std::make_shared<TCPServer>();
+    server->run(_port, [this](const Protocol::Packet& packet) {
+        return this->_handleCommand(packet.command, packet.data);
+    });
+
+    return this;
+}
+
+MMORPGApplication::~MMORPGApplication() {
+    if (_dbConnection) {
+        _dbConnection->disconnect();
+    }
 }

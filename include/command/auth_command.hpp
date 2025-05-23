@@ -9,8 +9,5 @@ public:
     }
 
 
-    std::unordered_map<std::string, Protocol::Value> execute(const std::unordered_map<std::string, Protocol::Value>& request) override {
-        std::cout << "Executing AuthCommand...\n";
-        return request;
-    }
+    std::unordered_map<std::string, Protocol::Value> execute(const std::unordered_map<std::string, Protocol::Value>& request) override;
 };
