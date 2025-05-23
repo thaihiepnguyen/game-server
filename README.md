@@ -17,7 +17,7 @@ mkdir build
 cd build
 
 cmake .. -DCMAKE_TOOLCHAIN_FILE="${YOUR_VCPKG_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake"
-make
+cmake --build .
 ```
 
 ### 4. Run project
@@ -37,7 +37,7 @@ make
         ⇅
 [Service Layer]       // Business logic (optional layer)
         ⇅
-[DAO Layer]           // Truy xuất dữ liệu từ DB
+[Repository Layer]           // Truy xuất dữ liệu từ DB
         ⇅
 [Database]            // MySQL, PostgreSQL, Redis, etc.
 ```
