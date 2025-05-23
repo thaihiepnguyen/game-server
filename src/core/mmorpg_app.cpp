@@ -10,7 +10,7 @@ std::unordered_map<std::string, Protocol::Value> MMORPGApplication::_handleComma
     if (it == _commands.end()) {
         throw std::runtime_error("Command not found");
     }
-    std::unordered_map<std::string, Protocol::Value> response;
+    std::unordered_map<std::string, Protocol::Value> response = request;
 
     std::vector<std::shared_ptr<ICommand>> handlers;
     auto command = it->second;
@@ -28,7 +28,7 @@ std::unordered_map<std::string, Protocol::Value> MMORPGApplication::_handleComma
 
     handlers.push_back(command);
     for (const auto& handler : handlers) {
-        response = handler->execute(request);
+        response = handler->execute(response);
     }
 
     return response;
@@ -67,6 +67,12 @@ MMORPGApplication* MMORPGApplication::registerCommand(Protocol::Command id, ICom
 
 MMORPGApplication* MMORPGApplication::registerRepository(IRepository* repository) {
     _repositoryRegister->registeRepo(std::shared_ptr<IRepository>(repository));
+
+    if (!_dbConnection) {
+        throw std::runtime_error("Database connection not set");
+    }
+    repository->setDatabaseConnection(_dbConnection);
+
     Logger::logInfo("Repository registered: " + String::demangle(typeid(*repository).name()));
     return this;
 }
