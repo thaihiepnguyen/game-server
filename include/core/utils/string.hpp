@@ -4,12 +4,12 @@
 
 class String {
 public:
-    /*
-     * Convert a mangled C++ type name to a human-readable format.
-     * 
-     * @brief Demangle a C++ type name
-     * @param name The mangled type name
-     * @return The demangled type name
+    /**
+      * Convert a mangled C++ type name to a human-readable format.
+      * 
+      * @brief Demangle a C++ type name
+      * @param name The mangled type name
+      * @return The demangled type name
      */
     static std::string demangle(const char* name) {
         int status = -1;
