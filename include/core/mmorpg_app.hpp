@@ -34,7 +34,7 @@ public:
 
     /**
      * @brief This method registers the authentication middleware based on the command is public or not.
-     * @param command The command object.
+     * @param middleware The command object.
      * @note This method will be called first when a request is received.
      */
     MMORPGApplication* registerAuthMiddleware(ICommand* middleware);

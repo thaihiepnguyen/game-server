@@ -1,7 +1,7 @@
 #include "core/repository/repository_register.hpp"
 
 
-void RepositoryRegister::registeRepo(std::shared_ptr<IRepository> repository) {
+void RepositoryRegister::registerRepo(std::shared_ptr<IRepository> repository) {
     if (!repository.get()) {
         throw std::invalid_argument("Repository cannot be null");
     }

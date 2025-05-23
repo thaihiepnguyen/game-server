@@ -1,11 +1,14 @@
 #pragma once
 #include "core/command/command.hpp"
 #include "core/service/provider.hpp"
+#include "service/user_service.hpp"
 
 class AuthCommand : public ICommand {
+private:
+    std::shared_ptr<UserService> _userService;
 public:
     void inject(std::shared_ptr<Provider> provider) override {
-        // Inject dependencies if needed
+        _userService = provider->getService<UserService>();
     }
 
 

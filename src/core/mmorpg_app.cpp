@@ -66,7 +66,7 @@ MMORPGApplication* MMORPGApplication::registerCommand(Protocol::Command id, ICom
 
 
 MMORPGApplication* MMORPGApplication::registerRepository(IRepository* repository) {
-    _repositoryRegister->registeRepo(std::shared_ptr<IRepository>(repository));
+    _repositoryRegister->registerRepo(std::shared_ptr<IRepository>(repository));
 
     if (!_dbConnection) {
         throw std::runtime_error("Database connection not set");

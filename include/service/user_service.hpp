@@ -9,7 +9,7 @@ private:
     std::shared_ptr<UserRepository> _userRepository;
 
 public:
-    void inject(std::shared_ptr<RepositoryRegister> r) override {
-        _userRepository = r->getRepository<UserRepository>();
+    void inject(std::shared_ptr<RepositoryRegister> repo) override {
+        _userRepository = repo->getRepository<UserRepository>();
     }
 };
