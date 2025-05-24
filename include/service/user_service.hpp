@@ -12,4 +12,6 @@ public:
     void inject(std::shared_ptr<RepositoryRegister> repo) override {
         _userRepository = repo->getRepository<UserRepository>();
     }
+
+    void createUser(const std::string& username, const std::string& password);
 };
