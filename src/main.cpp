@@ -9,6 +9,7 @@
 #include "command/auth_command.hpp"
 #include "core/protocol/protocol.hpp"
 #include "service/user_service.hpp"
+#include "service/auth_service.hpp"
 
 
 
@@ -34,6 +35,7 @@ int main() {
         ->registerDatabaseConnection(dbConnection)
         ->registerAuthMiddleware(new AuthCommand())
         ->registerRepository(new UserRepository())
+        ->registerService(new AuthService())
         ->registerService(new UserService())
         ->registerCommand(Protocol::Command::SIGN_UP, new SignupCommand(), true);
 

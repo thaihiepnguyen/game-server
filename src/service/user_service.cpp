@@ -2,6 +2,6 @@
 
 
 
-void UserService::createUser(const std::string& username, const std::string& password) {
-    _userRepository->createUser(username, password);
+void UserService::createUser(const std::string& username, const std::string& password, const std::string& salt) {
+    _userRepository->createUser(username, password, salt);
 }

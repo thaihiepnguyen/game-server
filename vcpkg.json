@@ -4,6 +4,7 @@
   "dependencies": [
     "asio",
     "nlohmann-json",
-    "libmysql"
+    "libmysql",
+    "openssl"
   ]
 }

@@ -13,5 +13,5 @@ public:
         _userRepository = repo->getRepository<UserRepository>();
     }
 
-    void createUser(const std::string& username, const std::string& password);
+    void createUser(const std::string& username, const std::string& password, const std::string& salt);
 };
