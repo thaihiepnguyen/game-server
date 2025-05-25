@@ -36,13 +36,10 @@ void TCPConnection::readMessage(std::function<std::unordered_map<std::string, Pr
 
                 try {
                     Protocol::Packet packet = Protocol::decode(message);
-                    // Handle the packet based on its command
-                    if (packet.command == Protocol::Command::SIGN_UP) {
-                        auto response = handleCommand(packet);
-                        Protocol::Packet responsePacket(packet.command, response);
-                        std::string jsonString = Protocol::encode(responsePacket);
-                        self->writeMessage(jsonString);
-                    }
+                    auto response = handleCommand(packet);
+                    Protocol::Packet responsePacket(packet.command, response);
+                    std::string jsonString = Protocol::encode(responsePacket);
+                    self->writeMessage(jsonString);
                 } catch (const std::exception& e) {
                     std::cerr << "Error decoding message: " << e.what() << "\n";
                     return;

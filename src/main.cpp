@@ -6,6 +6,7 @@
 #include "core/mmorpg_app.hpp"
 #include "memory"
 #include "command/signup_command.hpp"
+#include "command/signin_command.hpp"
 #include "command/auth_command.hpp"
 #include "core/protocol/protocol.hpp"
 #include "service/user_service.hpp"
@@ -34,9 +35,10 @@ int main() {
     mmorpgApp
         ->registerDatabaseConnection(dbConnection)
         ->registerAuthMiddleware(new AuthCommand())
-        ->registerService(new AuthService())
         ->registerService(new UserService())
-        ->registerCommand(Protocol::Command::SIGN_UP, new SignupCommand(), true);
+        ->registerService(new AuthService())
+        ->registerCommand(Protocol::Command::SIGN_UP, new SignupCommand(), true)
+        ->registerCommand(Protocol::Command::SIGN_IN, new SigninCommand(), true);
 
     std::cout << "Server is running on port " << PORT << "\n";
     // Run the server

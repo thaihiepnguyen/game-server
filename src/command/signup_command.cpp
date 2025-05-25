@@ -4,6 +4,7 @@
 std::unordered_map<std::string, Protocol::Value> SignupCommand::execute(
 const std::unordered_map<std::string, Protocol::Value>& request
 ) {
+    // validate request format
     std::unordered_map<std::string, Protocol::Value> response;
     if (std::holds_alternative<std::monostate>(request.at("username")) || 
         std::holds_alternative<std::monostate>(request.at("password"))) {
@@ -14,25 +15,16 @@ const std::unordered_map<std::string, Protocol::Value>& request
     std::string username = std::get<std::string>(request.at("username"));
     std::string password = std::get<std::string>(request.at("password"));
 
-    if (username.empty() || password.empty()) {
+
+    auto [success, message] = this->_authService->registerUser(username, password);
+
+    if (!success) {
         response["status"] = Protocol::Value("error");
-        response["message"] = Protocol::Value("Username and password cannot be empty");
+        response["message"] = Protocol::Value(message);
         return response;
     }
-
-    if (_userService->isUserExists(username)) {
-        response["status"] = Protocol::Value("error");
-        response["message"] = Protocol::Value("Username already exists");
-        return response;
-    }
-
-    auto [salt, hashedPassword] = _authService->hashPassword(password);
-
-    User user(username, hashedPassword, salt);
-
-    _userService->createUser(user);
-
     response["status"] = Protocol::Value("success");
-    response["message"] = Protocol::Value("User created successfully");
+    response["message"] = Protocol::Value("User registered successfully");
+
     return response;
 }

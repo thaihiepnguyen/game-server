@@ -42,7 +42,7 @@ public:
     /**
      * @brief This method registers a middleware for the application.
      * @param middleware The middleware object.
-     * @note This method will be called after the authentication middleware.
+     * @note This method will be called after the authentication middleware but before the commands.
      */
     MMORPGApplication* registerMiddleware(ICommand* middleware);
 

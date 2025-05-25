@@ -7,12 +7,10 @@
 
 class SignupCommand : public ICommand {
 private:
-    std::shared_ptr<UserService> _userService;
     std::shared_ptr<AuthService> _authService;
 
 public:
     void inject(std::shared_ptr<Provider> provider) override {
-        _userService = provider->getService<UserService>();
         _authService = provider->getService<AuthService>();
     }
 
