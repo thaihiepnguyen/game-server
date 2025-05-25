@@ -1,7 +1,7 @@
 #include "core/mmorpg_app.hpp"
 
 MMORPGApplication::MMORPGApplication() {
-    _repositoryRegister = std::make_shared<RepositoryRegister>();
+    _repository = std::make_shared<Repository>();
     _provider = std::make_shared<Provider>();
 }
 
@@ -64,23 +64,11 @@ MMORPGApplication* MMORPGApplication::registerCommand(Protocol::Command id, ICom
     return this;
 }
 
-
-MMORPGApplication* MMORPGApplication::registerRepository(IRepository* repository) {
-    _repositoryRegister->registerRepo(std::shared_ptr<IRepository>(repository));
-
-    if (!_dbConnection) {
-        throw std::runtime_error("Database connection not set");
-    }
-    repository->setDatabaseConnection(_dbConnection);
-
-    Logger::logInfo("Repository registered: " + String::demangle(typeid(*repository).name()));
-    return this;
-}
-
 MMORPGApplication* MMORPGApplication::registerService(IService* service) {
     auto sharedService = std::shared_ptr<IService>(service);
     _provider->addService(sharedService);
-    sharedService->inject(_repositoryRegister);
+    sharedService->inject(_provider);
+    sharedService->setRepository(_repository);
 
     Logger::logInfo("Service registered: " + String::demangle(typeid(*service).name()));
     return this;
@@ -88,6 +76,7 @@ MMORPGApplication* MMORPGApplication::registerService(IService* service) {
 
 MMORPGApplication* MMORPGApplication::registerDatabaseConnection(IDatabaseConnection* dbConnection) {
     _dbConnection = std::shared_ptr<IDatabaseConnection>(dbConnection);
+    _repository->setDatabaseConnection(_dbConnection);
     return this;
 }
 

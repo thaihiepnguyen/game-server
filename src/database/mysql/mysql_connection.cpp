@@ -38,7 +38,7 @@ void MysqlConnection::disconnect() {
     mysql_close(this->_conn);
 }
 
-RowResult MysqlConnection::execute(const std::string& query) {
+DBResult MysqlConnection::execute(const std::string& query) {
     if (!this->isConnected()) {
         throw std::runtime_error("Not connected to the database.");
     }
@@ -47,23 +47,102 @@ RowResult MysqlConnection::execute(const std::string& query) {
         throw std::runtime_error("MySQL query failed: " + std::string(mysql_error(this->_conn)));
     }
 
-    RowResult rowResult;
+    DBResult rowResult;
     MYSQL_RES* result = mysql_store_result(this->_conn);
     if (result == NULL) {
         return rowResult; // No result set
     }
 
+    unsigned int num_fields = mysql_num_fields(result);
+    MYSQL_FIELD* fields = mysql_fetch_fields(result);
+    std::vector<std::string> column_names;
+    for (unsigned int i = 0; i < num_fields; ++i) {
+        column_names.push_back(fields[i].name);
+    }
+
     MYSQL_ROW row;
     while ((row = mysql_fetch_row(result))) {
-        RowResult::Row rowData;
-        for (unsigned int i = 0; i < mysql_num_fields(result); ++i) {
+        DBResult::Record rowData;
+        for (unsigned int i = 0; i < num_fields; ++i) {
             if (row[i] == NULL) {
-                rowData.push_back(std::monostate{});
-                continue;
-            }
-            rowData.push_back(row[i]);
-        }
+                rowData[column_names[i]] = std::monostate{};
+            } else {
+                switch (fields[i].type) {
+                    // Integer types
+                    case MYSQL_TYPE_TINY:
+                    case MYSQL_TYPE_SHORT:
+                    case MYSQL_TYPE_LONG:
+                    case MYSQL_TYPE_LONGLONG:
+                    case MYSQL_TYPE_INT24:
+                    case MYSQL_TYPE_YEAR:
+                        rowData[column_names[i]] = std::stoll(row[i]);
+                        break;
 
+                    // Floating-point types
+                    case MYSQL_TYPE_FLOAT:
+                    case MYSQL_TYPE_DOUBLE:
+                    case MYSQL_TYPE_DECIMAL:
+                    case MYSQL_TYPE_NEWDECIMAL:
+                        rowData[column_names[i]] = std::stod(row[i]);
+                        break;
+
+                    // String and text types
+                    case MYSQL_TYPE_VARCHAR:
+                    case MYSQL_TYPE_STRING:
+                    case MYSQL_TYPE_VAR_STRING:
+                    case MYSQL_TYPE_JSON:
+                    case MYSQL_TYPE_ENUM:
+                    case MYSQL_TYPE_SET:
+                        rowData[column_names[i]] = std::string(row[i]);
+                        break;
+
+                    // Binary types (treat as string for simplicity)
+                    case MYSQL_TYPE_TINY_BLOB:
+                    case MYSQL_TYPE_MEDIUM_BLOB:
+                    case MYSQL_TYPE_LONG_BLOB:
+                    case MYSQL_TYPE_BLOB:
+                        rowData[column_names[i]] = std::string(row[i]);
+                        break;
+
+                    // Temporal types (store as string)
+                    case MYSQL_TYPE_TIMESTAMP:
+                    case MYSQL_TYPE_DATE:
+                    case MYSQL_TYPE_TIME:
+                    case MYSQL_TYPE_DATETIME:
+                    case MYSQL_TYPE_TIMESTAMP2:
+                    case MYSQL_TYPE_DATETIME2:
+                    case MYSQL_TYPE_TIME2:
+                        rowData[column_names[i]] = std::string(row[i]);
+                        break;
+
+                    // Boolean
+                    case MYSQL_TYPE_BOOL:
+                        rowData[column_names[i]] = (std::string(row[i]) == "1");
+                        break;
+
+                    // Bit type (store as string or convert to integer if needed)
+                    case MYSQL_TYPE_BIT:
+                        rowData[column_names[i]] = std::string(row[i]);
+                        break;
+
+                    // Geometry (store as string for simplicity)
+                    case MYSQL_TYPE_GEOMETRY:
+                        rowData[column_names[i]] = std::string(row[i]);
+                        break;
+
+                    // Internal or replication-only types
+                    case MYSQL_TYPE_NEWDATE:
+                    case MYSQL_TYPE_TYPED_ARRAY:
+                        rowData[column_names[i]] = std::string(row[i]);
+                        break;
+
+                    // Invalid or unsupported
+                    case MYSQL_TYPE_INVALID:
+                    default:
+                        throw std::runtime_error("Unsupported field type: " + std::to_string(fields[i].type));
+                }
+            }
+        }
         rowResult.addRow(rowData);
     }
 

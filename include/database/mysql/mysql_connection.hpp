@@ -16,6 +16,6 @@ public:
     
     bool connect(const DbConfig& config) override;
     void disconnect() override;
-    RowResult execute(const std::string& query) override;
+    DBResult execute(const std::string& query) override;
     bool isConnected() const override;
 };

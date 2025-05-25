@@ -32,6 +32,7 @@ namespace Protocol {
     enum class Command : unsigned short {
         // Client to Server
         SIGN_UP = 1,
+        SIGN_IN = 2,
 
 
         // Server to Client

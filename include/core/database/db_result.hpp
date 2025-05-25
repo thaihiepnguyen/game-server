@@ -6,8 +6,9 @@
 #include <cstdint>
 #include <memory>
 #include <iostream>
+#include <unordered_map>
 
-class RowResult {
+class DBResult {
 public:
     using Value = std::variant<        
         std::monostate,
@@ -16,16 +17,16 @@ public:
         std::string,
         bool
     >;
-    using Row = std::vector<Value>;
+    using Record = std::unordered_map<std::string, Value>;
 
-    RowResult() = default;
+    DBResult() = default;
 
-    void addRow(const Row& row);
+    void addRow(const Record& row);
 
-    const std::vector<Row>& rows() const;
+    const std::vector<Record>& rows() const;
     size_t size() const;
-    const Row& operator[](size_t idx) const;
+    const Record& operator[](size_t idx) const;
 
 private:
-    std::vector<Row> _rows;
+    std::vector<Record> _rows;
 };

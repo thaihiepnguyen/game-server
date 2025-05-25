@@ -1,7 +1,6 @@
-#include "command/signup_command.hpp"
-#include "models/user.hpp"
+#include "command/signin_command.hpp"
 
-std::unordered_map<std::string, Protocol::Value> SignupCommand::execute(
+std::unordered_map<std::string, Protocol::Value> SigninCommand::execute(
 const std::unordered_map<std::string, Protocol::Value>& request
 ) {
     std::unordered_map<std::string, Protocol::Value> response;
@@ -20,17 +19,8 @@ const std::unordered_map<std::string, Protocol::Value>& request
         return response;
     }
 
-    if (_userService->isUserExists(username)) {
-        response["status"] = Protocol::Value("error");
-        response["message"] = Protocol::Value("Username already exists");
-        return response;
-    }
-
     auto [salt, hashedPassword] = _authService->hashPassword(password);
 
-    User user(username, hashedPassword, salt);
-
-    _userService->createUser(user);
 
     response["status"] = Protocol::Value("success");
     response["message"] = Protocol::Value("User created successfully");

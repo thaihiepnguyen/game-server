@@ -1,11 +1,11 @@
-#include "core/database/row_result.hpp"
+#include "core/database/db_result.hpp"
 
-void RowResult::addRow(const Row& row) {
+void DBResult::addRow(const Record& row) {
     _rows.push_back(row);
 }
 
-const std::vector<RowResult::Row>& RowResult::rows() const { return _rows; }
+const std::vector<DBResult::Record>& DBResult::rows() const { return _rows; }
 
-size_t RowResult::size() const { return _rows.size(); }
+size_t DBResult::size() const { return _rows.size(); }
 
-const RowResult::Row& RowResult::operator[](size_t idx) const { return _rows[idx]; }
+const DBResult::Record& DBResult::operator[](size_t idx) const { return _rows[idx]; }

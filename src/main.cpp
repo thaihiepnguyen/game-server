@@ -34,7 +34,6 @@ int main() {
     mmorpgApp
         ->registerDatabaseConnection(dbConnection)
         ->registerAuthMiddleware(new AuthCommand())
-        ->registerRepository(new UserRepository())
         ->registerService(new AuthService())
         ->registerService(new UserService())
         ->registerCommand(Protocol::Command::SIGN_UP, new SignupCommand(), true);

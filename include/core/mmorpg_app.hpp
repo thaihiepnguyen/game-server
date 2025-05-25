@@ -9,15 +9,14 @@
 #include "core/database/db_connection.hpp"
 #include <functional>
 #include "network/tcp_server.hpp"
-#include "core/repository/repository_register.hpp"
 #include "core/service/provider.hpp"
+#include "core/service/service.hpp"
 #include "core/utils/log.hpp"
 #include "core/utils/string.hpp"
 
 class MMORPGApplication {
 private:
     short _port;
-    std::shared_ptr<RepositoryRegister> _repositoryRegister;
     std::shared_ptr<Provider> _provider;
 
     std::shared_ptr<ICommand> _authMiddleware;
@@ -26,6 +25,7 @@ private:
     std::unordered_map<Protocol::Command, std::shared_ptr<ICommand>> _commands;
 
     std::shared_ptr<IDatabaseConnection> _dbConnection;
+    std::shared_ptr<Repository> _repository;
     std::unordered_map<std::string, Protocol::Value> _handleCommand(Protocol::Command id, const std::unordered_map<std::string, Protocol::Value>& request);
 
 
@@ -54,12 +54,6 @@ public:
      * @note This method will be called after the middlewares
      */
     MMORPGApplication* registerCommand(Protocol::Command id, ICommand* command, bool isPublic);
-
-    /**
-     * @brief This method registers a repository for the application to query the database.
-     * @param repository The repository object.
-     */
-    MMORPGApplication* registerRepository(IRepository* repository);
 
     /**
      * @brief This method registers a service for the application.
