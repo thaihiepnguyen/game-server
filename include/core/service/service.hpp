@@ -10,6 +10,12 @@ private:
 
 public:
     virtual ~IService() = default;
+
+    /**
+     * Injects a provider into the service.
+     * Don't store the provider as a shared_ptr , as it may lead to circular dependencies.
+     * Just use it to access other services instead.
+     */
     virtual void inject(std::shared_ptr<Provider> provider) {};
 
     virtual void setRepository(std::shared_ptr<Repository> repository) final {

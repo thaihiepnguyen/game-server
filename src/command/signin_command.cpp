@@ -20,7 +20,7 @@ const std::unordered_map<std::string, Protocol::Value>& request
         return response;
     }
 
-    auto [success, message] = this->_authService->loginUser(username, password);
+    auto [success, message, token] = this->_authService->loginUser(username, password);
     if (!success) {
         response["status"] = Protocol::Value("error");
         response["message"] = Protocol::Value(message);
@@ -30,5 +30,6 @@ const std::unordered_map<std::string, Protocol::Value>& request
 
     response["status"] = Protocol::Value("success");
     response["message"] = Protocol::Value("User login successfully");
+    response["token"] = Protocol::Value(token);
     return response;
 }

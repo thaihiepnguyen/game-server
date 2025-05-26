@@ -11,6 +11,7 @@
 #include "core/protocol/protocol.hpp"
 #include "service/user_service.hpp"
 #include "service/auth_service.hpp"
+#include "command/test_command.hpp"
 
 
 
@@ -38,7 +39,8 @@ int main() {
         ->registerService(new UserService())
         ->registerService(new AuthService())
         ->registerCommand(Protocol::Command::SIGN_UP, new SignupCommand(), true)
-        ->registerCommand(Protocol::Command::SIGN_IN, new SigninCommand(), true);
+        ->registerCommand(Protocol::Command::SIGN_IN, new SigninCommand(), true)
+        ->registerCommand(Protocol::Command::TEST, new TestCommand(), false);
 
     std::cout << "Server is running on port " << PORT << "\n";
     // Run the server

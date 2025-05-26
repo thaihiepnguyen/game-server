@@ -9,6 +9,7 @@ find_package(asio REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(unofficial-libmysql REQUIRED)
 find_package(OpenSSL REQUIRED)
+find_package(jwt-cpp CONFIG REQUIRED)
 
 # Include the directory where the header files are located
 include_directories(include)
@@ -28,6 +29,7 @@ target_link_libraries(mygame PRIVATE
     unofficial::libmysql::libmysql
     OpenSSL::SSL
     OpenSSL::Crypto
+    jwt-cpp::jwt-cpp
     # wsock32 # for bug in Windows: https://stackoverflow.com/questions/38770895/how-to-fix-undefined-reference-to-getacceptexsockaddrs-boost-asio-in-clion
 )
 

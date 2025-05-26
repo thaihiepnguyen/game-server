@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <sstream>
 #include <tuple>
+#include <jwt-cpp/jwt.h>
 
 const unsigned int SALT_LENGTH = 16;
 const unsigned int SHA256_LENGTH = SHA256_DIGEST_LENGTH;
@@ -45,6 +46,16 @@ private:
         std::string saltedPassword = salt + password;
         return _sha256(saltedPassword) == hashedPassword;
     }
+    
+    std::string _generateToken(const User& user) {
+        auto token = jwt::create()
+            .set_type("JWT")
+            .set_issuer("auth_service")
+            .set_payload_claim("user_id", jwt::claim(std::to_string(user.id)))
+            .set_expires_at(std::chrono::system_clock::now() + std::chrono::hours(1))
+            .sign(jwt::algorithm::hs256{"secret_key"});
+        return token;
+    }
 public:
     void inject(std::shared_ptr<Provider> provider) override {
         _userService = provider->getService<UserService>();
@@ -77,26 +88,45 @@ public:
         }
     }
 
-    std::tuple<bool, std::string> loginUser(const std::string& username, const std::string& password) {
+    long long verifyToken(const std::string& token) {
+        auto verifier = jwt::verify()
+            .allow_algorithm(jwt::algorithm::hs256{"secret_key"})
+            .with_issuer("auth_service");
+
+        auto decoded = jwt::decode(token);
+        verifier.verify(decoded);
+
+        if (!decoded.has_payload_claim("user_id")) {
+            throw std::runtime_error("Token does not contain user_id claim");
+        }
+        auto userIdClaim = decoded.get_payload_claim("user_id");
+        if (userIdClaim.get_type() != jwt::json::type::string) {
+            throw std::runtime_error("user_id claim is not a string");
+        }
+        long long userId = std::stoll(userIdClaim.as_string());
+        return userId;
+    }
+
+    std::tuple<bool, std::string, std::string> loginUser(const std::string& username, const std::string& password) {
         if (username.empty() || password.empty()) {
-            return { false, "Username and password cannot be empty" };
+            return { false, "Username and password cannot be empty", "" };
         }
 
         try {
             auto user = _userService->getUserByUsername(username);
             if (!user.has_value()) {
-                return { false, "User not found" };
+                return { false, "User not found", "" };
             }
 
             const User& value = user.value();
 
             if (_verifyPassword(password, value.password, value.salt)) {
-                return { true, "Login successful" };
+                return { true, "Login successful", _generateToken(value) };
             } else {
-                return { false, "Invalid password" };
+                return { false, "Invalid password", "" };
             }
         } catch (const std::exception& e) {
-            return { false, std::string("Error logging in: ") + e.what() };
+            return { false, std::string("Error logging in: ") + e.what(), ""};
         }
     }
 };

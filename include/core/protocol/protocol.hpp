@@ -33,6 +33,7 @@ namespace Protocol {
         // Client to Server
         SIGN_UP = 1,
         SIGN_IN = 2,
+        TEST = 3,
 
 
         // Server to Client

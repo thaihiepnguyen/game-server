@@ -34,14 +34,20 @@ void TCPConnection::readMessage(std::function<std::unordered_map<std::string, Pr
                 std::string message;
                 std::getline(is, message);
 
+                Protocol::Packet packet = Protocol::decode(message);
                 try {
-                    Protocol::Packet packet = Protocol::decode(message);
                     auto response = handleCommand(packet);
                     Protocol::Packet responsePacket(packet.command, response);
                     std::string jsonString = Protocol::encode(responsePacket);
                     self->writeMessage(jsonString);
                 } catch (const std::exception& e) {
-                    std::cerr << "Error decoding message: " << e.what() << "\n";
+                    std::unordered_map<std::string, Protocol::Value> errorResponse;
+                    errorResponse["status"] = Protocol::Value("error");
+                    errorResponse["message"] = Protocol::Value(e.what());
+                    Protocol::Packet errorPacket(packet.command, errorResponse);
+                    std::string errorJson = Protocol::encode(errorPacket);
+                    self->writeMessage(errorJson);
+                    self->disconnect();
                     return;
                 }
 

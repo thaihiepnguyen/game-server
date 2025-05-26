@@ -5,6 +5,7 @@
     "asio",
     "nlohmann-json",
     "libmysql",
-    "openssl"
+    "openssl",
+    "jwt-cpp"
   ]
 }
