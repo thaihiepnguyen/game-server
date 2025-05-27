@@ -37,9 +37,11 @@ void TCPConnection::readMessage(std::function<std::unordered_map<std::string, Pr
                 Protocol::Packet packet = Protocol::decode(message);
                 try {
                     auto response = handleCommand(packet);
-                    Protocol::Packet responsePacket(packet.command, response);
-                    std::string jsonString = Protocol::encode(responsePacket);
-                    self->writeMessage(jsonString);
+                    if (!response.empty()) {
+                        Protocol::Packet responsePacket(packet.command, response);
+                        std::string jsonString = Protocol::encode(responsePacket);
+                        self->writeMessage(jsonString);
+                    }
                 } catch (const std::exception& e) {
                     std::unordered_map<std::string, Protocol::Value> errorResponse;
                     errorResponse["status"] = Protocol::Value("error");
