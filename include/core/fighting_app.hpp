@@ -8,6 +8,7 @@
 #include <memory>
 #include "core/database/db_connection.hpp"
 #include <functional>
+#include "network/tcp_connection.hpp"
 #include "network/tcp_server.hpp"
 #include "core/service/provider.hpp"
 #include "core/service/service.hpp"
@@ -17,8 +18,10 @@
 class FightingGameApplication {
 private:
     short _port;
-    std::shared_ptr<Provider> _provider;
 
+    std::vector<std::shared_ptr<TCPConnection>> _connections;
+
+    std::shared_ptr<Provider> _provider;
     std::shared_ptr<ICommand> _authMiddleware;
     std::unordered_map<std::shared_ptr<ICommand>, std::shared_ptr<ICommand>> _authMap;
     std::vector<std::shared_ptr<ICommand>> _middlewares;

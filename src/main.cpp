@@ -32,8 +32,8 @@ int main() {
     }
 
     // Create the fighting game application
-    auto mmorpgApp = std::make_unique<FightingGameApplication>();
-    mmorpgApp
+    auto fightingApp = std::make_unique<FightingGameApplication>();
+    fightingApp
         ->registerDatabaseConnection(dbConnection)
         ->registerAuthMiddleware(new AuthCommand())
         ->registerService(new UserService())
@@ -44,6 +44,6 @@ int main() {
 
     std::cout << "Server is running on port " << PORT << "\n";
     // Run the server
-    mmorpgApp->listen(PORT);
+    fightingApp->listen(PORT);
     return 0;
 }

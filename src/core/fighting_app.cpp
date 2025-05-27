@@ -83,7 +83,20 @@ FightingGameApplication* FightingGameApplication::registerDatabaseConnection(IDa
 FightingGameApplication* FightingGameApplication::listen(unsigned short port) {
     _port = port;
     auto server = std::make_shared<TCPServer>();
+
+    server->addOnNewConnectionListener([this](std::shared_ptr<TCPConnection> connection) {
+        Logger::logInfo("New connection established!");
+        _connections.push_back(connection);
+    });
+
+    server->addOnDisconnectListener([this](std::shared_ptr<TCPConnection> connection) {
+        // Handle disconnection
+        Logger::logInfo("Connection disconnected!");
+        this->_connections.erase(std::remove(this->_connections.begin(), this->_connections.end(), connection), this->_connections.end());
+    });
+
     server->run(_port, [this](const Protocol::Packet& packet) {
+        // Handle the incoming command packet
         return this->_handleCommand(packet.command, packet.data);
     });
 
