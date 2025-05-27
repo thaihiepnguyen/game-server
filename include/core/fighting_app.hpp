@@ -14,7 +14,7 @@
 #include "core/utils/log.hpp"
 #include "core/utils/string.hpp"
 
-class MMORPGApplication {
+class FightingGameApplication {
 private:
     short _port;
     std::shared_ptr<Provider> _provider;
@@ -30,21 +30,21 @@ private:
 
 
 public:
-    MMORPGApplication();
+    FightingGameApplication();
 
     /**
      * @brief This method registers the authentication middleware based on the command is public or not.
      * @param middleware The command object.
      * @note This method will be called first when a request is received.
      */
-    MMORPGApplication* registerAuthMiddleware(ICommand* middleware);
+    FightingGameApplication* registerAuthMiddleware(ICommand* middleware);
 
     /**
      * @brief This method registers a middleware for the application.
      * @param middleware The middleware object.
      * @note This method will be called after the authentication middleware but before the commands.
      */
-    MMORPGApplication* registerMiddleware(ICommand* middleware);
+    FightingGameApplication* registerMiddleware(ICommand* middleware);
 
     /**
      * @brief This method registers a command for the application.
@@ -53,25 +53,25 @@ public:
      * @param isPublic Whether the command is public or not for authentication.
      * @note This method will be called after the middlewares
      */
-    MMORPGApplication* registerCommand(Protocol::Command id, ICommand* command, bool isPublic);
+    FightingGameApplication* registerCommand(Protocol::Command id, ICommand* command, bool isPublic);
 
     /**
      * @brief This method registers a service for the application.
      * @param service The service object.
      */
-    MMORPGApplication* registerService(IService* service);
+    FightingGameApplication* registerService(IService* service);
 
     /**
      * @brief This method registers a database connection for the application.
      * @param dbConnection The database connection object.
      */
-    MMORPGApplication* registerDatabaseConnection(IDatabaseConnection* dbConnection);
+    FightingGameApplication* registerDatabaseConnection(IDatabaseConnection* dbConnection);
 
     /**
      * @brief This method starts the server and listens for incoming connections.
      * @param port The port number to listen on.
      */
-    MMORPGApplication* listen(unsigned short port);
+    FightingGameApplication* listen(unsigned short port);
 
-    ~MMORPGApplication();
+    ~FightingGameApplication();
 };

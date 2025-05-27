@@ -3,7 +3,7 @@
 #include "network/tcp_server.hpp"
 #include "core/database/db_config.hpp"
 #include "database/mysql/mysql_connection.hpp"
-#include "core/mmorpg_app.hpp"
+#include "core/fighting_app.hpp"
 #include "memory"
 #include "command/signup_command.hpp"
 #include "command/signin_command.hpp"
@@ -31,8 +31,8 @@ int main() {
         return 1;
     }
 
-    // Create the MMORPG application
-    MMORPGApplication* mmorpgApp = new MMORPGApplication();
+    // Create the fighting game application
+    auto mmorpgApp = std::make_unique<FightingGameApplication>();
     mmorpgApp
         ->registerDatabaseConnection(dbConnection)
         ->registerAuthMiddleware(new AuthCommand())
@@ -45,8 +45,5 @@ int main() {
     std::cout << "Server is running on port " << PORT << "\n";
     // Run the server
     mmorpgApp->listen(PORT);
-    
-    // Clean up
-    delete mmorpgApp;
     return 0;
 }

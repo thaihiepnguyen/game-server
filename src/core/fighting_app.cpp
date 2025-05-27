@@ -1,11 +1,11 @@
-#include "core/mmorpg_app.hpp"
+#include "core/fighting_app.hpp"
 
-MMORPGApplication::MMORPGApplication() {
+FightingGameApplication::FightingGameApplication() {
     _repository = std::make_shared<Repository>();
     _provider = std::make_shared<Provider>();
 }
 
-std::unordered_map<std::string, Protocol::Value> MMORPGApplication::_handleCommand(Protocol::Command id, const std::unordered_map<std::string, Protocol::Value>& request) {
+std::unordered_map<std::string, Protocol::Value> FightingGameApplication::_handleCommand(Protocol::Command id, const std::unordered_map<std::string, Protocol::Value>& request) {
     auto it = _commands.find(id);
     if (it == _commands.end()) {
         throw std::runtime_error("Command not found");
@@ -34,7 +34,7 @@ std::unordered_map<std::string, Protocol::Value> MMORPGApplication::_handleComma
     return response;
 }
 
-MMORPGApplication* MMORPGApplication::registerAuthMiddleware(ICommand* middleware) {
+FightingGameApplication* FightingGameApplication::registerAuthMiddleware(ICommand* middleware) {
     _authMiddleware = std::shared_ptr<ICommand>(middleware);
 
     Logger::logInfo("Authentication Middleware registered: " 
@@ -42,14 +42,14 @@ MMORPGApplication* MMORPGApplication::registerAuthMiddleware(ICommand* middlewar
     return this;
 }
 
-MMORPGApplication* MMORPGApplication::registerMiddleware(ICommand* middleware) {
+FightingGameApplication* FightingGameApplication::registerMiddleware(ICommand* middleware) {
     _middlewares.push_back(std::shared_ptr<ICommand>(middleware));
 
     Logger::logInfo("Middleware registered: " + String::demangle(typeid(*middleware).name()));
     return this;
 }
 
-MMORPGApplication* MMORPGApplication::registerCommand(Protocol::Command id, ICommand* command, bool isPublic = false) {
+FightingGameApplication* FightingGameApplication::registerCommand(Protocol::Command id, ICommand* command, bool isPublic = false) {
     std::shared_ptr<ICommand> cmdPtr(command);
 
     if (!isPublic) {
@@ -64,7 +64,7 @@ MMORPGApplication* MMORPGApplication::registerCommand(Protocol::Command id, ICom
     return this;
 }
 
-MMORPGApplication* MMORPGApplication::registerService(IService* service) {
+FightingGameApplication* FightingGameApplication::registerService(IService* service) {
     auto sharedService = std::shared_ptr<IService>(service);
     _provider->addService(sharedService);
     sharedService->inject(_provider);
@@ -74,13 +74,13 @@ MMORPGApplication* MMORPGApplication::registerService(IService* service) {
     return this;
 }
 
-MMORPGApplication* MMORPGApplication::registerDatabaseConnection(IDatabaseConnection* dbConnection) {
+FightingGameApplication* FightingGameApplication::registerDatabaseConnection(IDatabaseConnection* dbConnection) {
     _dbConnection = std::shared_ptr<IDatabaseConnection>(dbConnection);
     _repository->setDatabaseConnection(_dbConnection);
     return this;
 }
 
-MMORPGApplication* MMORPGApplication::listen(unsigned short port) {
+FightingGameApplication* FightingGameApplication::listen(unsigned short port) {
     _port = port;
     auto server = std::make_shared<TCPServer>();
     server->run(_port, [this](const Protocol::Packet& packet) {
@@ -90,7 +90,7 @@ MMORPGApplication* MMORPGApplication::listen(unsigned short port) {
     return this;
 }
 
-MMORPGApplication::~MMORPGApplication() {
+FightingGameApplication::~FightingGameApplication() {
     if (_dbConnection) {
         _dbConnection->disconnect();
     }
