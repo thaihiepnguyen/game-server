@@ -19,7 +19,9 @@ public:
     int userId() const;
     void setUserId(int userId);
     asio::streambuf& streambuf() { return _streambuf; }
-    void readMessage(std::function<std::unordered_map<std::string, Protocol::Value>(const Protocol::Packet&)> handleCommand);
+    void readMessage(std::function<std::unordered_map<std::string, Protocol::Value>(
+        const std::shared_ptr<TCPConnection>& connection,
+        const Protocol::Packet&)> handleCommand);
     void writeMessage(const std::string& message);
     void addOnDisconnectListener(std::function<void(std::shared_ptr<TCPConnection>)> callback);
     void disconnect();

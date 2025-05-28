@@ -2,7 +2,10 @@
 
 
 
-std::unordered_map<std::string, Protocol::Value> AuthCommand::execute(const std::unordered_map<std::string, Protocol::Value>& request) {
+std::unordered_map<std::string, Protocol::Value> AuthCommand::execute(
+    const std::shared_ptr<TCPConnection>& connection,
+    const std::unordered_map<std::string, Protocol::Value>& request) 
+{
     auto response = request;
     // Validate request format
     if (std::holds_alternative<std::monostate>(request.at("act"))){
@@ -18,6 +21,7 @@ std::unordered_map<std::string, Protocol::Value> AuthCommand::execute(const std:
     long long userId = _authService->verifyToken(token);
 
     response["user_id"] = Protocol::Value(userId);
+    connection->setUserId(static_cast<int>(userId));
 
     return response;
 }

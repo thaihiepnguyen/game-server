@@ -13,7 +13,9 @@ TCPServer::TCPServer()
 : _acceptor(NULL), _port(0)
 {}
 
-void TCPServer::run(int port, std::function<std::unordered_map<std::string, Protocol::Value>(const Protocol::Packet&)> handleCommand) {
+void TCPServer::run(int port, std::function<std::unordered_map<std::string, Protocol::Value>(
+    const std::shared_ptr<TCPConnection>& connection,
+    const Protocol::Packet&)> handleCommand) {
     this->_port = port;
     this->_acceptor = std::make_shared<tcp::acceptor>(this->_ioContext, tcp::endpoint(tcp::v4(), this->_port));
     try {
@@ -24,7 +26,9 @@ void TCPServer::run(int port, std::function<std::unordered_map<std::string, Prot
     }
 }
 
-void TCPServer::_accept(std::function<std::unordered_map<std::string, Protocol::Value>(const Protocol::Packet&)> handleCommand) {
+void TCPServer::_accept(std::function<std::unordered_map<std::string, Protocol::Value>(
+    const std::shared_ptr<TCPConnection>& connection,
+    const Protocol::Packet&)> handleCommand) {
     auto newConnection = std::make_shared<TCPConnection>(this->_ioContext);
 
     this->_acceptor->async_accept(newConnection->socket(),

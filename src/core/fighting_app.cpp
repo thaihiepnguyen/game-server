@@ -5,7 +5,9 @@ FightingGameApplication::FightingGameApplication() {
     _provider = std::make_shared<Provider>();
 }
 
-std::unordered_map<std::string, Protocol::Value> FightingGameApplication::_handleCommand(Protocol::Command id, const std::unordered_map<std::string, Protocol::Value>& request) {
+std::unordered_map<std::string, Protocol::Value> FightingGameApplication::_handleCommand(
+    const std::shared_ptr<TCPConnection>& connection,
+    Protocol::Command id, const std::unordered_map<std::string, Protocol::Value>& request) {
     auto it = _commands.find(id);
     if (it == _commands.end()) {
         throw std::runtime_error("Command not found");
@@ -28,7 +30,7 @@ std::unordered_map<std::string, Protocol::Value> FightingGameApplication::_handl
 
     handlers.push_back(command);
     for (const auto& handler : handlers) {
-        response = handler->execute(response);
+        response = handler->execute(connection, response);
     }
 
     return response;
@@ -95,9 +97,12 @@ FightingGameApplication* FightingGameApplication::listen(unsigned short port) {
         this->_connections.erase(std::remove(this->_connections.begin(), this->_connections.end(), connection), this->_connections.end());
     });
 
-    server->run(_port, [this](const Protocol::Packet& packet) {
+    server->run(_port, [this](
+        const std::shared_ptr<TCPConnection>& connection,
+        const Protocol::Packet& packet
+    ) {
         // Handle the incoming command packet
-        return this->_handleCommand(packet.command, packet.data);
+        return this->_handleCommand(connection, packet.command, packet.data);
     });
 
     return this;

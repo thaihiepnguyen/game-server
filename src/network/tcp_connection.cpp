@@ -21,7 +21,9 @@ void TCPConnection::setUserId(int userId) {
     this->_userId = userId;
 }
 
-void TCPConnection::readMessage(std::function<std::unordered_map<std::string, Protocol::Value>(const Protocol::Packet&)> handleCommand) {
+void TCPConnection::readMessage(std::function<std::unordered_map<std::string, Protocol::Value>(
+    const std::shared_ptr<TCPConnection>& connection,
+    const Protocol::Packet&)> handleCommand) {
     auto self = shared_from_this();
 
     asio::async_read_until(
@@ -36,7 +38,7 @@ void TCPConnection::readMessage(std::function<std::unordered_map<std::string, Pr
 
                 Protocol::Packet packet = Protocol::decode(message);
                 try {
-                    auto response = handleCommand(packet);
+                    auto response = handleCommand(self, packet);
                     if (!response.empty()) {
                         Protocol::Packet responsePacket(packet.command, response);
                         std::string jsonString = Protocol::encode(responsePacket);

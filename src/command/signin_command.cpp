@@ -1,8 +1,9 @@
 #include "command/signin_command.hpp"
 
 std::unordered_map<std::string, Protocol::Value> SigninCommand::execute(
-const std::unordered_map<std::string, Protocol::Value>& request
-) {
+    const std::shared_ptr<TCPConnection>& connection,
+    const std::unordered_map<std::string, Protocol::Value>& request) 
+{
     // validate request format
     std::unordered_map<std::string, Protocol::Value> response;
     if (std::holds_alternative<std::monostate>(request.at("username")) || 

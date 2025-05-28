@@ -29,7 +29,11 @@ private:
 
     std::shared_ptr<IDatabaseConnection> _dbConnection;
     std::shared_ptr<Repository> _repository;
-    std::unordered_map<std::string, Protocol::Value> _handleCommand(Protocol::Command id, const std::unordered_map<std::string, Protocol::Value>& request);
+    std::unordered_map<std::string, Protocol::Value> _handleCommand(
+        const std::shared_ptr<TCPConnection>& connection,
+        Protocol::Command id, 
+        const std::unordered_map<std::string, Protocol::Value>& request
+    );
 
 
 public:
