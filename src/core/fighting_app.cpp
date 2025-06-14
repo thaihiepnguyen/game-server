@@ -94,7 +94,7 @@ FightingGameApplication* FightingGameApplication::listen(unsigned short port) {
     server->addOnDisconnectListener([this](std::shared_ptr<TCPConnection> connection) {
         // Handle disconnection
         Logger::logInfo("Connection disconnected!");
-        this->_connections.erase(std::remove(this->_connections.begin(), this->_connections.end(), connection), this->_connections.end());
+        _connections.erase(std::remove(_connections.begin(), _connections.end(), connection), _connections.end());
     });
 
     server->run(_port, [this](
@@ -102,7 +102,7 @@ FightingGameApplication* FightingGameApplication::listen(unsigned short port) {
         const Protocol::Packet& packet
     ) {
         // Handle the incoming command packet
-        return this->_handleCommand(connection, packet.command, packet.data);
+        return _handleCommand(connection, packet.command, packet.data);
     });
 
     return this;

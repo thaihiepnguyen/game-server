@@ -11,7 +11,9 @@
 #include "core/protocol/protocol.hpp"
 #include "service/user_service.hpp"
 #include "service/auth_service.hpp"
+#include "service/room_service.hpp"
 #include "command/test_command.hpp"
+#include "command/room_command.hpp"
 
 
 
@@ -38,8 +40,10 @@ int main() {
         ->registerAuthMiddleware(new AuthCommand())
         ->registerService(new UserService())
         ->registerService(new AuthService())
+        ->registerService(new RoomService())
         ->registerCommand(Protocol::Command::SIGN_UP, new SignupCommand(), true)
         ->registerCommand(Protocol::Command::SIGN_IN, new SigninCommand(), true)
+        ->registerCommand(Protocol::Command::WAIT_FOR_ROOM, new RoomCommand(), false)
         ->registerCommand(Protocol::Command::TEST, new TestCommand(), false);
 
     std::cout << "Server is running on port " << PORT << "\n";

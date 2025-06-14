@@ -34,6 +34,7 @@ namespace Protocol {
         SIGN_UP = 1,
         SIGN_IN = 2,
         TEST = 3,
+        WAIT_FOR_ROOM = 4,
 
 
         // Server to Client
