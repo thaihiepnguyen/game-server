@@ -13,42 +13,42 @@ TCPServer::TCPServer()
 : _acceptor(NULL), _port(0)
 {}
 
-void TCPServer::run(int port, std::function<std::unordered_map<std::string, Protocol::Value>(
-    const std::shared_ptr<TCPConnection>& connection,
-    const Protocol::Packet&)> handleCommand) {
+bool TCPServer::bind(unsigned short& port) {
     this->_port = port;
-    this->_acceptor = std::make_shared<tcp::acceptor>(this->_ioContext, tcp::endpoint(tcp::v4(), this->_port));
     try {
-        this->_accept(handleCommand);
-        this->_ioContext.run();
-    } catch (const std::exception& e) {
-        std::cerr << "Error: " << e.what() << "\n";
+        this->_acceptor = std::make_shared<tcp::acceptor>(this->_ioContext, tcp::endpoint(tcp::v4(), this->_port));
+        return true;
+    } catch(const std::exception& e) {
+        return false;
     }
 }
 
-void TCPServer::_accept(std::function<std::unordered_map<std::string, Protocol::Value>(
-    const std::shared_ptr<TCPConnection>& connection,
-    const Protocol::Packet&)> handleCommand) {
-    auto newConnection = std::make_shared<TCPConnection>(this->_ioContext);
+bool TCPServer::listen() {
+    try {
+        _acceptor->listen(asio::socket_base::max_listen_connections);
+        return true;
+    } catch (const asio::system_error& error) {
+        std::cerr << "Listen error: " << error.what() << std::endl;
+        return false;
+    }
+}
 
-    this->_acceptor->async_accept(newConnection->socket(),
-        [this, newConnection, handleCommand](const asio::error_code& error) {
+void TCPServer::accept(std::function<void(std::shared_ptr<TCPConnection>, std::string)> handler) {
+    auto connection = std::make_shared<TCPConnection>(this->_ioContext);
+
+    this->_acceptor->async_accept(
+        connection->socket(),
+        [&](const asio::error_code& error) {
             if (!error) {
-                // Notify about the new connection
-                if (this->_newConnectionCallbacks) {
-                    this->_newConnectionCallbacks(newConnection);
-                }
-                newConnection->addOnDisconnectListener([this](std::shared_ptr<TCPConnection> connection) {
-                    // Notify about disconnection
-                    if (this->_disconnectionCallbacks) {
-                        this->_disconnectionCallbacks(connection);
-                    }
+                connection->recv([connection, handler](std::string msg) {
+                    handler(connection, msg);
                 });
-
-                newConnection->readMessage(handleCommand);
             } else {
-                std::cerr << "Error accepting connection: " << error.message() << "\n";
+                std::cerr << "Accept error: " << error.message() << std::endl;
             }
-            this->_accept(handleCommand);
-        });
+
+
+            this->accept(handler);
+        }
+    );
 }

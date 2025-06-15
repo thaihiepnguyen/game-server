@@ -48,6 +48,6 @@ int main() {
 
     std::cout << "Server is running on port " << PORT << "\n";
     // Run the server
-    fightingApp->listen(PORT);
+    fightingApp->start(PORT);
     return 0;
 }

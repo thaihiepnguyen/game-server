@@ -9,9 +9,6 @@
 class ICommand {
 public:
     virtual ~ICommand() = default;
-    virtual std::unordered_map<std::string, Protocol::Value> execute(
-        const std::shared_ptr<TCPConnection>& connection,
-        const std::unordered_map<std::string, Protocol::Value>& request
-    ) = 0;
+    virtual void execute(const std::shared_ptr<TCPConnection>& connection, Protocol::Packet& packet) = 0;
     virtual void inject(std::shared_ptr<Provider> provider) {};
 };

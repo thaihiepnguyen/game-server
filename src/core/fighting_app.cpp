@@ -5,15 +5,12 @@ FightingGameApplication::FightingGameApplication() {
     _provider = std::make_shared<Provider>();
 }
 
-std::unordered_map<std::string, Protocol::Value> FightingGameApplication::_handleCommand(
-    const std::shared_ptr<TCPConnection>& connection,
-    Protocol::Command id, const std::unordered_map<std::string, Protocol::Value>& request) {
-    auto it = _commands.find(id);
+void FightingGameApplication::_handleCommand(const std::shared_ptr<TCPConnection>& connection, Protocol::Packet& packet) {
+    auto it = _commands.find(packet.command);
+
     if (it == _commands.end()) {
         throw std::runtime_error("Command not found");
     }
-    std::unordered_map<std::string, Protocol::Value> response = request;
-
     std::vector<std::shared_ptr<ICommand>> handlers;
     auto command = it->second;
     
@@ -30,10 +27,8 @@ std::unordered_map<std::string, Protocol::Value> FightingGameApplication::_handl
 
     handlers.push_back(command);
     for (const auto& handler : handlers) {
-        response = handler->execute(connection, response);
+        handler->execute(connection, packet);
     }
-
-    return response;
 }
 
 FightingGameApplication* FightingGameApplication::registerAuthMiddleware(ICommand* middleware) {
@@ -82,28 +77,26 @@ FightingGameApplication* FightingGameApplication::registerDatabaseConnection(IDa
     return this;
 }
 
-FightingGameApplication* FightingGameApplication::listen(unsigned short port) {
-    _port = port;
+FightingGameApplication* FightingGameApplication::start(unsigned short port) {
     auto server = std::make_shared<TCPServer>();
 
-    server->addOnNewConnectionListener([this](std::shared_ptr<TCPConnection> connection) {
-        Logger::logInfo("New connection established!");
-        _connections.push_back(connection);
-    });
+    if (server->bind(port)) {
+        server->listen();
 
-    server->addOnDisconnectListener([this](std::shared_ptr<TCPConnection> connection) {
-        // Handle disconnection
-        Logger::logInfo("Connection disconnected!");
-        _connections.erase(std::remove(_connections.begin(), _connections.end(), connection), _connections.end());
-    });
-
-    server->run(_port, [this](
-        const std::shared_ptr<TCPConnection>& connection,
-        const Protocol::Packet& packet
-    ) {
-        // Handle the incoming command packet
-        return _handleCommand(connection, packet.command, packet.data);
-    });
+        server->accept([&](auto connection, std::string msg) {
+            Protocol::Packet packet = Protocol::decode(msg);
+            try {
+                this->_handleCommand(connection, packet);
+            } catch (const std::exception& e) {
+                std::unordered_map<std::string, Protocol::Value> res;
+                res["status"] = Protocol::Value("error");
+                res["message"] = Protocol::Value(e.what());
+                Protocol::Packet errorPacket(packet.command, res);
+                std::string errorJson = Protocol::encode(errorPacket);
+                connection->send(errorJson);
+            }
+        });
+    }
 
     return this;
 }

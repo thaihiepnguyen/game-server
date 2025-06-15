@@ -30,7 +30,7 @@ target_link_libraries(mygame PRIVATE
     OpenSSL::SSL
     OpenSSL::Crypto
     jwt-cpp::jwt-cpp
-    wsock32 # for bug in Windows: https://stackoverflow.com/questions/38770895/how-to-fix-undefined-reference-to-getacceptexsockaddrs-boost-asio-in-clion
+    # wsock32 # for bug in Windows: https://stackoverflow.com/questions/38770895/how-to-fix-undefined-reference-to-getacceptexsockaddrs-boost-asio-in-clion
 )
 
 target_compile_features(mygame PRIVATE cxx_std_20)

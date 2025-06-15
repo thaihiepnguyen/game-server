@@ -14,9 +14,9 @@ public:
         _roomService = provider->getService<RoomService>();
     }
 
-    std::unordered_map<std::string, Protocol::Value> execute(
+    void execute(
         const std::shared_ptr<TCPConnection>& connection,
-        const std::unordered_map<std::string, Protocol::Value>& request
+        Protocol::Packet& packet
     ) override {
         if (connection->userId() == 0) {
             throw std::runtime_error("Connection user ID is not set");
@@ -24,8 +24,5 @@ public:
 
         // Call the room service to wait for a room
         _roomService->waitForRoom(connection);
-
-        // Return an empty response as the room service handles the communication
-        return {};
     }
 };

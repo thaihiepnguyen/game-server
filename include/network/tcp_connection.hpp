@@ -6,23 +6,22 @@
 
 using asio::ip::tcp;
 
-class TCPConnection : public std::enable_shared_from_this<TCPConnection> {
+class TCPConnection {
 private:
     tcp::socket _socket;
     int _userId;
     asio::streambuf _streambuf;
-    std::vector<std::function<void(std::shared_ptr<TCPConnection>)>> _disconnectCallbacks;
 
 public:
-    tcp::socket& socket();
+    tcp::socket& socket() { return _socket; }
+
     TCPConnection(asio::io_context &io_context);
     int userId() const;
     void setUserId(int userId);
     asio::streambuf& streambuf() { return _streambuf; }
-    void readMessage(std::function<std::unordered_map<std::string, Protocol::Value>(
-        const std::shared_ptr<TCPConnection>& connection,
-        const Protocol::Packet&)> handleCommand);
-    void writeMessage(const std::string& message);
-    void addOnDisconnectListener(std::function<void(std::shared_ptr<TCPConnection>)> callback);
+
+    void recv(std::function<void(std::string)>);
+    void send(const std::string& message);
+
     void disconnect();
 };

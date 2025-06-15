@@ -14,8 +14,8 @@ public:
         _authService = provider->getService<AuthService>();
     }
 
-    std::unordered_map<std::string, Protocol::Value> execute(
+    void execute(
         const std::shared_ptr<TCPConnection>& connection,
-        const std::unordered_map<std::string, Protocol::Value>& request
+        Protocol::Packet& packet
     ) override;
 };

@@ -7,38 +7,27 @@
 #include <vector>
 #include <unordered_map>
 #include "core/protocol/protocol.hpp"
+#include <functional>
 
 class TCPServer {
 private:
     int _port;
     asio::io_context _ioContext;
     std::shared_ptr<asio::ip::tcp::acceptor> _acceptor;
-    std::function<void(std::shared_ptr<TCPConnection>)> _newConnectionCallbacks;
-    std::function<void(std::shared_ptr<TCPConnection>)> _disconnectionCallbacks;
-
-    void _accept(std::function<std::unordered_map<std::string, Protocol::Value>(
-        const std::shared_ptr<TCPConnection>& connection,
-        const Protocol::Packet&)> handleCommand);
-
 public:
     TCPServer();
-    void run(int port, std::function<std::unordered_map<std::string, Protocol::Value>(
-        const std::shared_ptr<TCPConnection>& connection,
-        const Protocol::Packet&)> handleCommand);
-    
     /**
-     * Notifies the server about a new connection.
-     * @param connection The new TCP connection.
+     * Establishes a port on which to listen.
      */
-    void addOnNewConnectionListener(std::function<void(std::shared_ptr<TCPConnection>)> callback) {
-        _newConnectionCallbacks = callback;
-    }
+    bool bind(unsigned short&);
 
     /**
-     * Notifies the server about a disconnection.
-     * @param connection The TCP connection that was disconnected.
+     * Checks for new client connections
      */
-    void addOnDisconnectListener(std::function<void(std::shared_ptr<TCPConnection>)> callback) {
-        _disconnectionCallbacks = callback;
-    }
+    bool listen();
+
+    /**
+     * Accept an attempt client connection
+     */
+    void accept(std::function<void(std::shared_ptr<TCPConnection>, std::string)>);
 };

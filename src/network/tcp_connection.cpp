@@ -5,10 +5,6 @@
 
 using asio::ip::tcp;
 
-tcp::socket& TCPConnection::socket() {
-    return this->_socket;
-}
-
 TCPConnection::TCPConnection(asio::io_context &ioContext) :
     _socket(ioContext)
 {}
@@ -21,72 +17,43 @@ void TCPConnection::setUserId(int userId) {
     this->_userId = userId;
 }
 
-void TCPConnection::readMessage(std::function<std::unordered_map<std::string, Protocol::Value>(
-    const std::shared_ptr<TCPConnection>& connection,
-    const Protocol::Packet&)> handleCommand) {
-    auto self = shared_from_this();
-
+void TCPConnection::recv(std::function<void(std::string)> handler) {
     asio::async_read_until(
-        this->socket(),
+        this->_socket,
         this->streambuf(),
         '\n',
-        [self, handleCommand](const asio::error_code& error, std::size_t bytes_transferred) {
+        [this, handler](const asio::error_code& error, std::size_t bytes_transferred) {
             if (!error) {
-                std::istream is(&self->streambuf());
+                std::istream is(&this->streambuf());
                 std::string message;
                 std::getline(is, message);
 
-                Protocol::Packet packet = Protocol::decode(message);
-                try {
-                    auto response = handleCommand(self, packet);
-                    if (!response.empty()) {
-                        Protocol::Packet responsePacket(packet.command, response);
-                        std::string jsonString = Protocol::encode(responsePacket);
-                        self->writeMessage(jsonString);
-                    }
-                } catch (const std::exception& e) {
-                    std::unordered_map<std::string, Protocol::Value> errorResponse;
-                    errorResponse["status"] = Protocol::Value("error");
-                    errorResponse["message"] = Protocol::Value(e.what());
-                    Protocol::Packet errorPacket(packet.command, errorResponse);
-                    std::string errorJson = Protocol::encode(errorPacket);
-                    self->writeMessage(errorJson);
-                    self->disconnect();
-                    return;
-                }
+                handler(message);
 
-                self->readMessage(handleCommand);
+                this->recv(handler);
             } else {
                 std::cerr << "Error reading message: " << error.message() << "\n";
-                self->disconnect();
+                this->disconnect();
             }
         }
     );
 }
 
-void TCPConnection::writeMessage(const std::string& message) {
-    auto self = shared_from_this();
+void TCPConnection::send(const std::string& message) {
     auto buffer = std::make_shared<std::string>(message + "\n");
 
     asio::async_write(
         this->socket(),
         asio::buffer(*buffer),
-        [self, buffer](const asio::error_code& error, std::size_t /*bytes_transferred*/) {
+        [this, buffer](const asio::error_code& error, std::size_t /*bytes_transferred*/) {
             if (error) {
                 std::cerr << "Error writing message: " << error.message() << "\n";
-                self->disconnect();
+                this->disconnect();
             }
         }
     );
 }
 
-void TCPConnection::addOnDisconnectListener(std::function<void(std::shared_ptr<TCPConnection>)> callback) {
-    this->_disconnectCallbacks.push_back(std::move(callback));
-}
-
 void TCPConnection::disconnect() {
-    for (const auto& callback : this->_disconnectCallbacks) {
-        callback(shared_from_this());
-    }
     this->socket().close();
 }
