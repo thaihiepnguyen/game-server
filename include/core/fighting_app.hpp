@@ -2,75 +2,33 @@
 
 #include <string>
 #include "core/command/command.hpp"
-#include "core/protocol/protocol.hpp"
 #include <vector>
 #include <unordered_map>
 #include <memory>
-#include "core/database/db_connection.hpp"
 #include <functional>
-#include "network/tcp_connection.hpp"
-#include "network/tcp_server.hpp"
+#include "core/network/tcp_connection.hpp"
+#include "core/network/tcp_server.hpp"
 #include "core/service/provider.hpp"
 #include "core/service/service.hpp"
 #include "core/utils/log.hpp"
-#include "core/utils/string.hpp"
 
-class FightingGameApplication {
+class FightingGameApplication
+{
 private:
     std::shared_ptr<Provider> _provider;
-    std::shared_ptr<ICommand> _authMiddleware;
-    std::unordered_map<std::shared_ptr<ICommand>, std::shared_ptr<ICommand>> _authMap;
-    std::vector<std::shared_ptr<ICommand>> _middlewares;
-    std::unordered_map<Protocol::Command, std::shared_ptr<ICommand>> _commands;
-
-    std::shared_ptr<IDatabaseConnection> _dbConnection;
-    std::shared_ptr<Repository> _repository;
-    void _handleCommand(const std::shared_ptr<TCPConnection>& connection, Protocol::Packet& packet);
-
+    std::unordered_map<int, std::shared_ptr<ICommand>> _commands;
+    void _handleCommand(const std::shared_ptr<TCPConnection> &connection, int commandId, const char *data, std::size_t length);
 
 public:
     FightingGameApplication();
 
-    /**
-     * @brief This method registers the authentication middleware based on the command is public or not.
-     * @param middleware The command object.
-     * @note This method will be called first when a request is received.
-     */
-    FightingGameApplication* registerAuthMiddleware(ICommand* middleware);
+    FightingGameApplication *registerCommand(int commandId, ICommand *command);
 
-    /**
-     * @brief This method registers a middleware for the application.
-     * @param middleware The middleware object.
-     * @note This method will be called after the authentication middleware but before the commands.
-     */
-    FightingGameApplication* registerMiddleware(ICommand* middleware);
-
-    /**
-     * @brief This method registers a command for the application.
-     * @param id The command ID.
-     * @param command The command object.
-     * @param isPublic Whether the command is public or not for authentication.
-     * @note This method will be called after the middlewares
-     */
-    FightingGameApplication* registerCommand(Protocol::Command id, ICommand* command, bool isPublic);
-
-    /**
-     * @brief This method registers a service for the application.
-     * @param service The service object.
-     */
-    FightingGameApplication* registerService(IService* service);
-
-    /**
-     * @brief This method registers a database connection for the application.
-     * @param dbConnection The database connection object.
-     */
-    FightingGameApplication* registerDatabaseConnection(IDatabaseConnection* dbConnection);
+    FightingGameApplication *registerService(IService *service);
 
     /**
      * @brief This method starts the server and listens for incoming connections.
      * @param port The port number to listen on.
      */
-    FightingGameApplication* start(unsigned short port);
-
-    ~FightingGameApplication();
+    void start(unsigned short port);
 };

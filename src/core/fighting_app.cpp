@@ -1,108 +1,64 @@
 #include "core/fighting_app.hpp"
+#include "core/protocol/packet_header.hpp"
+#include "core/network/tcp_server.hpp"
+#include <arpa/inet.h>
+#include "core/protocol/protocol.hpp"
 
-FightingGameApplication::FightingGameApplication() {
-    _repository = std::make_shared<Repository>();
+FightingGameApplication::FightingGameApplication()
+{
     _provider = std::make_shared<Provider>();
 }
 
-void FightingGameApplication::_handleCommand(const std::shared_ptr<TCPConnection>& connection, Protocol::Packet& packet) {
-    auto it = _commands.find(packet.command);
-
-    if (it == _commands.end()) {
-        throw std::runtime_error("Command not found");
+void FightingGameApplication::_handleCommand(const std::shared_ptr<TCPConnection> &connection, int commandId, const char *data, std::size_t length)
+{
+    auto it = _commands.find(commandId);
+    if (it != _commands.end())
+    {
+        it->second->execute(connection, data, length);
     }
-    std::vector<std::shared_ptr<ICommand>> handlers;
-    auto command = it->second;
-    
-    // Check if the command requires authentication
-    auto itAuth = _authMap.find(command);
-    if (itAuth != _authMap.end()) {
-        handlers.push_back(itAuth->second);
-    }
-
-    // Global middlewares
-    for (const auto& middleware : _middlewares) {
-        handlers.push_back(middleware);
-    }
-
-    handlers.push_back(command);
-    for (const auto& handler : handlers) {
-        handler->execute(connection, packet);
+    else
+    {
+        Logger::logError("Command not found: " + std::to_string(commandId));
     }
 }
 
-FightingGameApplication* FightingGameApplication::registerAuthMiddleware(ICommand* middleware) {
-    _authMiddleware = std::shared_ptr<ICommand>(middleware);
-
-    Logger::logInfo("Authentication Middleware registered: " 
-        + String::demangle(typeid(*middleware).name()));
-    return this;
-}
-
-FightingGameApplication* FightingGameApplication::registerMiddleware(ICommand* middleware) {
-    _middlewares.push_back(std::shared_ptr<ICommand>(middleware));
-
-    Logger::logInfo("Middleware registered: " + String::demangle(typeid(*middleware).name()));
-    return this;
-}
-
-FightingGameApplication* FightingGameApplication::registerCommand(Protocol::Command id, ICommand* command, bool isPublic = false) {
+FightingGameApplication *FightingGameApplication::registerCommand(int commandId, ICommand *command)
+{
     std::shared_ptr<ICommand> cmdPtr(command);
+    _commands[commandId] = cmdPtr;
+    _commands[commandId]->inject(_provider);
 
-    if (!isPublic) {
-        _authMap[cmdPtr] = _authMiddleware;
-    }
-    
-    _commands[id] = cmdPtr;
-    _commands[id]->inject(_provider);
-
-
-    Logger::logInfo("Command registered: " + String::demangle(typeid(*command).name()) + " -> command " + std::to_string(static_cast<unsigned int>(id)));
     return this;
 }
 
-FightingGameApplication* FightingGameApplication::registerService(IService* service) {
-    auto sharedService = std::shared_ptr<IService>(service);
-    _provider->addService(sharedService);
-    sharedService->inject(_provider);
-    sharedService->setRepository(_repository);
+FightingGameApplication *FightingGameApplication::registerService(IService *service)
+{
+    std::shared_ptr<IService> servicePtr(service);
+    _provider->addService(servicePtr);
+    servicePtr->inject(_provider);
 
-    Logger::logInfo("Service registered: " + String::demangle(typeid(*service).name()));
     return this;
 }
 
-FightingGameApplication* FightingGameApplication::registerDatabaseConnection(IDatabaseConnection* dbConnection) {
-    _dbConnection = std::shared_ptr<IDatabaseConnection>(dbConnection);
-    _repository->setDatabaseConnection(_dbConnection);
-    return this;
-}
-
-FightingGameApplication* FightingGameApplication::start(unsigned short port) {
+void FightingGameApplication::start(unsigned short port)
+{
     auto server = std::make_shared<TCPServer>();
 
-    if (server->bind(port)) {
+    if (server->bind(port))
+    {
         server->listen();
 
-        server->accept([&](auto connection, std::string msg) {
-            Protocol::Packet packet = Protocol::decode(msg);
-            try {
-                this->_handleCommand(connection, packet);
-            } catch (const std::exception& e) {
-                std::unordered_map<std::string, Protocol::Value> res;
-                res["status"] = Protocol::Value("error");
-                res["message"] = Protocol::Value(e.what());
-                Protocol::Packet errorPacket(packet.command, res);
-                std::string errorJson = Protocol::encode(errorPacket);
-                connection->send(errorJson);
-            }
-        });
+        server->accept(
+            [&](auto connection, const char *msg, std::size_t length)
+            {
+                PacketHeader header = Protocol::getHeader(msg, length);
+
+                // jump to the data part of the message
+                const char *data = msg + sizeof(PacketHeader);
+
+                _handleCommand(connection, header.commandId, data, header.length);
+            });
     }
 
-    return this;
-}
-
-FightingGameApplication::~FightingGameApplication() {
-    if (_dbConnection) {
-        _dbConnection->disconnect();
-    }
+    server->run();
 }
