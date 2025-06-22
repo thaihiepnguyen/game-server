@@ -29,7 +29,6 @@ void TCPConnection::recv(std::function<void(const char *, std::size_t)> handler)
 
 void TCPConnection::send(const char *buffer, std::size_t length)
 {
-    // Ensure the buffer is null-terminated for string operations
     if (length == 0 || buffer == nullptr)
     {
         std::cerr << "Error: Attempted to send an empty buffer.\n";

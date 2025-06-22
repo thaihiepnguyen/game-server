@@ -11,8 +11,5 @@ PacketHeader Protocol::getHeader(const char *data, std::size_t length)
     memcpy(&header.commandId, data, sizeof(int));
     memcpy(&header.length, data + sizeof(int), sizeof(int));
 
-    header.commandId = ntohl(header.commandId);
-    header.length = ntohl(header.length);
-
     return header;
 }

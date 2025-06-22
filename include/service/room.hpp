@@ -7,5 +7,6 @@ class Room
 public:
     std::vector<std::shared_ptr<TCPConnection>> players;
 
-    Room(std::vector<std::shared_ptr<TCPConnection>> playerList) : players(std::move(playerList)) {}
+    Room(std::vector<std::shared_ptr<TCPConnection>> playerList)
+     : players(playerList) {}
 };

@@ -2,7 +2,6 @@
 
 #include "core/protocol/packet_header.hpp"
 #include <stdexcept>
-#include <arpa/inet.h>
 
 class Protocol
 {
