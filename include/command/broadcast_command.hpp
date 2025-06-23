@@ -6,6 +6,7 @@
 #include "service/broadcast_service.hpp"
 #include "protocol/broadcast_packet.hpp"
 #include <iostream>
+#include <cstring>
 
 class BroadcastCommand : public ICommand
 {

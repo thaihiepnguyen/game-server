@@ -10,11 +10,21 @@ file(GLOB SOURCES src/*.cpp src/**/*.cpp src/**/**/*.cpp src/**/**/**/*.cpp)
 
 add_executable(mygame ${SOURCES})
 
-target_link_libraries(mygame PRIVATE 
-    asio::asio
-    # ws2_32
-    # wsock32
-)
+if(WIN32)
+    target_link_libraries(mygame PRIVATE 
+        asio::asio
+        ws2_32
+        wsock32
+    )
+elseif(APPLE)
+    target_link_libraries(mygame PRIVATE 
+        asio::asio
+    )
+elseif(UNIX)
+    target_link_libraries(mygame PRIVATE 
+        asio::asio
+    )
+endif()
 
 target_compile_features(mygame PRIVATE cxx_std_20)
 

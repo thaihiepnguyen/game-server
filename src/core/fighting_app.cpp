@@ -1,7 +1,6 @@
 #include "core/fighting_app.hpp"
 #include "core/protocol/packet_header.hpp"
 #include "core/network/tcp_server.hpp"
-#include <arpa/inet.h>
 #include "core/protocol/protocol.hpp"
 
 FightingGameApplication::FightingGameApplication()

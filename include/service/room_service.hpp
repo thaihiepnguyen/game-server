@@ -38,11 +38,10 @@ private:
 
     void _notifyRoomCreated(
         const std::shared_ptr<TCPConnection> &connection,
-        const int& character,
-        const int& opponent,
-        const int& background,
-        const std::string& side = "left"
-    )
+        const int &character,
+        const int &opponent,
+        const int &background,
+        const std::string &side = "left")
     {
         RoomPacket packet;
         packet.commandId = CommandId::WAIT_FOR_MATCH;
@@ -58,7 +57,8 @@ private:
     {
         // Remove the connection from the queue if it exists
         auto it = std::find_if(_connections.begin(), _connections.end(),
-                               [&connection](const std::shared_ptr<TCPConnection> &conn) {
+                               [&connection](const std::shared_ptr<TCPConnection> &conn)
+                               {
                                    return conn == connection;
                                });
         if (it != _connections.end())
@@ -66,7 +66,6 @@ private:
             _connections.erase(it);
         }
     }
-
 
 public:
     void inject(std::shared_ptr<Provider> provider) override
@@ -80,9 +79,8 @@ public:
         {
             // If no room is available, create a new one
             _connections.push_back(connection);
-            connection->events.subscribe("disconnect", [this, connection]() {
-                _removeConnection(connection);
-            });
+            connection->events.subscribe("disconnect", [this, connection]()
+                                         { _removeConnection(connection); });
         }
         else
         {

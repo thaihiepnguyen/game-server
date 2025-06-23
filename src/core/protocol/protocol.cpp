@@ -1,4 +1,5 @@
 #include "core/protocol/protocol.hpp"
+#include <cstring>
 
 PacketHeader Protocol::getHeader(const char *data, std::size_t length)
 {

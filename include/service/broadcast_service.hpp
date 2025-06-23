@@ -13,6 +13,7 @@ class BroadcastService : public IService
 {
 private:
     std::shared_ptr<RoomService> _roomService;
+
 public:
     void inject(std::shared_ptr<Provider> provider) override
     {
@@ -35,7 +36,7 @@ public:
         packet.y = dataPacket.y;
         packet.hp = dataPacket.hp;
         packet.isFlipped = dataPacket.isFlipped; // 0 for left, 1 for right
-        packet.state = dataPacket.state; // 0 for idle, 1 for attack,
+        packet.state = dataPacket.state;         // 0 for idle, 1 for attack,
 
         opponent->send(packet.toBuffer(), sizeof(BroadcastPacket));
     }
