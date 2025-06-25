@@ -16,7 +16,7 @@ vcpkg install
 mkdir build
 cd build
 
-cmake .. -DCMAKE_TOOLCHAIN_FILE="${YOUR_VCPKG_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake"
+cmake .. -DCMAKE_TOOLCHAIN_FILE="${YOUR_VCPKG_DIR}/scripts/buildsystems/vcpkg.cmake"
 cmake --build .
 ```
 

@@ -61,7 +61,6 @@ void TCPServer::accept(std::function<void(std::shared_ptr<TCPConnection>, const 
                                                  if (it != _connections.end())
                                                  {
                                                      _connections.erase(it);
-                                                     std::cout << "Connection removed" << std::endl;
                                                  }
                                              });
                 connection->recv([connection, handler](const char *data, std::size_t length)
