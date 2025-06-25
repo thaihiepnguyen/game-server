@@ -20,13 +20,7 @@ public:
         // This method can be used to inject dependencies if needed
     }
 
-    int getRandomCharacterId()
-    {
-        return rand() % CHARACTER_LENGTH + 1;
-    }
+    int getRandomCharacterId();
 
-    int getRandomBackgroundId()
-    {
-        return rand() % BACKGROUND_LENGTH + 1;
-    }
+    int getRandomBackgroundId();
 };
