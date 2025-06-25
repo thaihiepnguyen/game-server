@@ -3,18 +3,16 @@
 #include "core/service/service.hpp"
 #include <unordered_map>
 #include <string>
-#include <random>
+#include <cstdlib>
 #include <ctime>
 #include "core/utils/const.hpp"
 
 class ResourceService : public IService
 {
-private:
-    std::mt19937 _rng;
-
 public:
-    ResourceService() : _rng(std::time(nullptr))
+    ResourceService()
     {
+        srand(time(0));
     }
 
     void inject(std::shared_ptr<Provider> provider) override
@@ -24,13 +22,11 @@ public:
 
     int getRandomCharacterId()
     {
-        std::uniform_int_distribution<int> dist(1, CHARACTER_LENGTH);
-        return dist(_rng);
+        return rand() % CHARACTER_LENGTH + 1;
     }
 
     int getRandomBackgroundId()
     {
-        std::uniform_int_distribution<int> dist(1, BACKGROUND_LENGTH);
-        return dist(_rng);
+        return rand() % BACKGROUND_LENGTH + 1;
     }
 };
