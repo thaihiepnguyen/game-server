@@ -1,3 +1,5 @@
+## How to run this project manually
+
 ### 1. Prerequisites
 
 - C++20
@@ -26,7 +28,7 @@ cmake --build .
 ./mygame
 ```
 
-### 5. Run via docker
+## How to run this project via docker
 
 ```
 docker build -t <your-image-tag-name> .
@@ -36,7 +38,7 @@ docker build -t <your-image-tag-name> .
 docker run -p 8081:8081 <your-image-tag-name>
 ```
 
-### 6. Architecture
+## What architecture this project uses
 
 ```
 [Network Layer]       // TCP socket, WebSocket
