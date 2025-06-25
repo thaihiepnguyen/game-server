@@ -26,18 +26,22 @@ cmake --build .
 ./mygame
 ```
 
-### 5. Architecture
+### 5. Run via docker
+
+```
+docker build -t <your-image-tag-name> .
+```
+
+```
+docker run -p 8081:8081 <your-image-tag-name>
+```
+
+### 6. Architecture
 
 ```
 [Network Layer]       // TCP socket, WebSocket
         ⇅
 [Protocol Layer]      // Encode/decode message packets
         ⇅
-[Game Logic Layer]    // Session, combat, chat, world updates, etc.
-        ⇅
-[Service Layer]       // Business logic (optional layer)
-        ⇅
-[Repository Layer]           // Truy xuất dữ liệu từ DB
-        ⇅
-[Database]            // MySQL, PostgreSQL, Redis, etc.
+[Service Layer]       // Business logic
 ```
