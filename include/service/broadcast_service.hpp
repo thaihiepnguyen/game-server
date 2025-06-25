@@ -7,6 +7,7 @@
 #include "core/utils/const.hpp"
 #include "core/protocol/packet_header.hpp"
 #include "protocol/broadcast_packet.hpp"
+#include "protocol/opponent_out_packet.hpp"
 #include <memory>
 
 class BroadcastService : public IService
@@ -25,7 +26,10 @@ public:
         auto opponent = _roomService->getOpponentConnection(connection);
         if (!opponent)
         {
-            std::cerr << "No opponent found for update." << std::endl;
+            OpponentOutPacket outPacket;
+            outPacket.commandId = CommandId::OPPONENT_OUT;
+            outPacket.length = 0; // No additional data needed
+            connection->send(outPacket.toBuffer(), sizeof(OpponentOutPacket));
             return;
         }
 

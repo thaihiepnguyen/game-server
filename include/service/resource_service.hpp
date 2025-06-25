@@ -3,12 +3,17 @@
 #include "core/service/service.hpp"
 #include <unordered_map>
 #include <string>
+#include <random>
+#include <ctime>
 #include "core/utils/const.hpp"
 
 class ResourceService : public IService
 {
+private:
+    std::mt19937 _rng;
+
 public:
-    ResourceService()
+    ResourceService() : _rng(std::time(nullptr))
     {
     }
 
@@ -19,11 +24,13 @@ public:
 
     int getRandomCharacterId()
     {
-        return (rand() % CHARACTER_LENGTH) + 1;
+        std::uniform_int_distribution<int> dist(1, CHARACTER_LENGTH);
+        return dist(_rng);
     }
 
     int getRandomBackgroundId()
     {
-        return (rand() % BACKGROUND_LENGTH) + 1;
+        std::uniform_int_distribution<int> dist(1, BACKGROUND_LENGTH);
+        return dist(_rng);
     }
 };

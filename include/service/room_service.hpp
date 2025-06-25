@@ -14,9 +14,9 @@
 class RoomService : public IService
 {
 private:
-    std::shared_ptr<ResourceService> _resourceService; // TODO: remove resource leak
+    std::shared_ptr<ResourceService> _resourceService;
     std::vector<std::shared_ptr<TCPConnection>> _connections;
-    std::unordered_map<long long, std::shared_ptr<Room>> _rooms; // TODO: remove resource leak
+    std::unordered_map<long long, std::shared_ptr<Room>> _rooms;
     unsigned long long _nextRoomId = 0;
 
 private:
@@ -24,12 +24,19 @@ private:
     {
         // Create a new room with the given connections
         long long roomId = ++_nextRoomId;
-        _rooms[roomId] = std::make_shared<Room>(std::vector{player1, player2});
+        std::vector<std::shared_ptr<TCPConnection>> players = {player1, player2};
+        _rooms[roomId] = std::make_shared<Room>(players);
 
         // Assign random characters and backgrounds to both players
         int character1 = _resourceService->getRandomCharacterId();
         int character2 = _resourceService->getRandomCharacterId();
         int background = _resourceService->getRandomBackgroundId();
+
+        for (const auto &player : players)
+        {
+            player->events.subscribe("disconnect", [this, &player, roomId]()
+                                     { _rooms.erase(roomId); });
+        }
 
         // Notify both players about the room creation
         _notifyRoomCreated(player1, character1, character2, background, "left");
@@ -55,7 +62,6 @@ private:
 
     void _removeConnection(const std::shared_ptr<TCPConnection> &connection)
     {
-        // Remove the connection from the queue if it exists
         auto it = std::find_if(_connections.begin(), _connections.end(),
                                [&connection](const std::shared_ptr<TCPConnection> &conn)
                                {
@@ -79,7 +85,7 @@ public:
         {
             // If no room is available, create a new one
             _connections.push_back(connection);
-            connection->events.subscribe("disconnect", [this, connection]()
+            connection->events.subscribe("disconnect", [this, &connection]()
                                          { _removeConnection(connection); });
         }
         else

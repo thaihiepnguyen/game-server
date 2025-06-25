@@ -1,11 +1,14 @@
 #pragma once
 
-enum CommandId {
+enum CommandId
+{
     WAIT_FOR_MATCH = 1,
-    BROADCAST = 2
+    BROADCAST = 2,
+    OPPONENT_OUT = 3
 };
 
-enum CharacterId {
+enum CharacterId
+{
     ARCHER = 1,
     FIGHTER = 2,
     GORGON = 3,
@@ -14,7 +17,8 @@ enum CharacterId {
     TENGU = 6,
 };
 
-enum BackgroundId {
+enum BackgroundId
+{
     BRIDGE = 1,
     COUNTRY_SIDE = 2,
     STREET = 3,
