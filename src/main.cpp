@@ -8,7 +8,7 @@
 #include "service/broadcast_service.hpp"
 #include "command/join_room_command.hpp"
 #include "command/broadcast_command.hpp"
-#include "core/utils/const.hpp"
+#include "core/util/const.hpp"
 
 using asio::ip::tcp;
 

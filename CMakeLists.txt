@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 4.0)
 
 project(MyGame LANGUAGES CXX)
 
-find_package(asio REQUIRED)
+find_package(asio CONFIG REQUIRED)
 
 include_directories(include)
 

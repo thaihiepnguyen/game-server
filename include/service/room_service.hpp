@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include "core/service/service.hpp"
 #include "core/network/tcp_connection.hpp"
-#include "service/room.hpp"
+#include "core/resource/game_room/game_room.hpp"
 #include "core/protocol/packet_header.hpp"
 #include "protocol/room_packet.hpp"
 #include "service/resource_service.hpp"
@@ -16,7 +16,7 @@ class RoomService : public IService
 private:
     std::shared_ptr<ResourceService> _resourceService;
     std::vector<std::shared_ptr<TCPConnection>> _connections;
-    std::unordered_map<long long, std::shared_ptr<Room>> _rooms;
+    std::unordered_map<long long, std::shared_ptr<GameRoom>> _rooms;
     unsigned long long _nextRoomId = 0;
 
 private:

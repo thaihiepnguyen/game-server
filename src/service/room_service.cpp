@@ -1,23 +1,34 @@
 #include "service/room_service.hpp"
-
-
+#include "core/resource/character/character.hpp"
+#include <unordered_map>
+#include "core/util/const.hpp"
 
 void RoomService::_createRoom(const std::shared_ptr<TCPConnection> &player1, const std::shared_ptr<TCPConnection> &player2)
 {
     // Create a new room with the given connections
     long long roomId = ++_nextRoomId;
-    std::vector<std::shared_ptr<TCPConnection>> players = {player1, player2};
-    _rooms[roomId] = std::make_shared<Room>(players);
 
     // Assign random characters and backgrounds to both players
     int character1 = _resourceService->getRandomCharacterId();
     int character2 = _resourceService->getRandomCharacterId();
     int background = _resourceService->getRandomBackgroundId();
 
+    std::shared_ptr<ICharacter> character1Ptr(_resourceService->createCharacter(character1, 100, 200, false));
+    std::shared_ptr<ICharacter> character2Ptr(_resourceService->createCharacter(character2, WINDOW_WIDTH - 100, 200, true));
+
+    std::vector<std::pair<std::shared_ptr<TCPConnection>, std::shared_ptr<ICharacter>>> players = {
+        {player1, character1Ptr},
+        {player2, character2Ptr}};
+
+    // Create the environment for the game room
+    std::shared_ptr<IEnvironment> environment(_resourceService->createEnvironment(background));
+
+    _rooms[roomId] = std::make_shared<GameRoom>(players, environment);
+
     for (const auto &player : players)
     {
-        player->events.subscribe("disconnect", [this, &player, roomId]()
-                                    { _rooms.erase(roomId); });
+        player.first->events.subscribe("disconnect", [this, conn = player.first, roomId]()
+                                       { _rooms.erase(roomId); });
     }
 
     // Notify both players about the room creation
@@ -45,10 +56,10 @@ void RoomService::_notifyRoomCreated(
 void RoomService::_removeConnection(const std::shared_ptr<TCPConnection> &connection)
 {
     auto it = std::find_if(_connections.begin(), _connections.end(),
-                            [&connection](const std::shared_ptr<TCPConnection> &conn)
-                            {
-                                return conn == connection;
-                            });
+                           [&connection](const std::shared_ptr<TCPConnection> &conn)
+                           {
+                               return conn == connection;
+                           });
     if (it != _connections.end())
     {
         _connections.erase(it);
@@ -62,7 +73,7 @@ void RoomService::waitForRoom(const std::shared_ptr<TCPConnection> &connection)
         // If no room is available, create a new one
         _connections.push_back(connection);
         connection->events.subscribe("disconnect", [this, &connection]()
-                                        { _removeConnection(connection); });
+                                     { _removeConnection(connection); });
     }
     else
     {
@@ -77,7 +88,7 @@ long long RoomService::getRoomIdByConnection(const std::shared_ptr<TCPConnection
 {
     for (const auto &room : _rooms)
     {
-        const auto &players = room.second->players;
+        const auto &players = room.second->getConnections();
         if (std::find(players.begin(), players.end(), connection) != players.end())
         {
             return room.first; // Return the room ID if the connection is found
@@ -94,7 +105,7 @@ std::shared_ptr<TCPConnection> RoomService::getOpponentConnection(const std::sha
         return nullptr; // Connection not found in any room
     }
 
-    const auto &players = _rooms.at(roomId)->players;
+    const auto &players = _rooms.at(roomId)->getConnections();
     for (const auto &player : players)
     {
         if (player != connection) // Check if the player is not the same as the connection

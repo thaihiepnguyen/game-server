@@ -5,7 +5,8 @@
 #include <string>
 #include <cstdlib>
 #include <ctime>
-#include "core/utils/const.hpp"
+#include "core/util/const.hpp"
+#include "core/resource/character/character.hpp"
 
 class ResourceService : public IService
 {
@@ -23,4 +24,7 @@ public:
     int getRandomCharacterId();
 
     int getRandomBackgroundId();
+
+    ICharacter *createCharacter(int characterId, float x, float y, bool isFlipped);
+    IEnvironment *createEnvironment(int backgroundId);
 };

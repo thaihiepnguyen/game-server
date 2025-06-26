@@ -10,7 +10,7 @@
 #include "core/network/tcp_server.hpp"
 #include "core/service/provider.hpp"
 #include "core/service/service.hpp"
-#include "core/utils/log.hpp"
+#include "core/util/log.hpp"
 
 class FightingGameApplication
 {
