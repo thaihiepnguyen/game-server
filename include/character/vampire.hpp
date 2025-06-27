@@ -25,7 +25,7 @@ public:
         return 34; // Vampire has a higher jump height
     }
 
-    virtual int setAtkCCooldown()
+    int setAtkCCooldown() override
     {
         return 900; // 0.9 second cooldown
     }

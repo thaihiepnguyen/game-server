@@ -3,7 +3,7 @@
 #include <cmath>
 #include <unordered_map>
 
-const enum CommandId
+enum CommandId
 {
     WAIT_FOR_MATCH = 1,
     BROADCAST = 2,
@@ -11,7 +11,7 @@ const enum CommandId
     MOVE = 3,
 };
 
-const enum CharacterId
+enum CharacterId
 {
     ARCHER = 1,
     FIGHTER = 2,
@@ -21,7 +21,7 @@ const enum CharacterId
     TENGU = 6,
 };
 
-const enum BackgroundId
+enum BackgroundId
 {
     BRIDGE = 1,
     COUNTRY_SIDE = 2,
@@ -41,7 +41,7 @@ const int WINDOW_HEIGHT = 600;
 
 const float GRAVITY = 2.0f; // Gravity acceleration
 
-const enum CharacterState
+enum CharacterState
 {
     IDLE = 0,
     WALK = 1,
@@ -54,14 +54,14 @@ const enum CharacterState
     DEATH = 8
 };
 
-const enum QueuedPacketType {
+enum QueuedPacketType {
     MOVE_LEFT = 1,
     MOVE_RIGHT = 2,
     STOP_MOVE = 3,
     ATTACK_Z = 4,
     ATTACK_X = 5,
     ATTACK_C = 6,
-    JUMP = 7,
+    PAC_JUMP = 7,
     DEFEND = 8,
     UNDEFEND = 9,
 };

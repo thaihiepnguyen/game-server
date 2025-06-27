@@ -1,3 +1,5 @@
+#pragma once
+
 #include <memory>
 #include <vector>
 #include "core/network/tcp_connection.hpp"
@@ -112,7 +114,7 @@ private:
                 character->stopMovement();
                 break;
 
-            case QueuedPacketType::JUMP:
+            case QueuedPacketType::PAC_JUMP:
                 character->jump();
                 break;
 
@@ -287,6 +289,7 @@ private:
         return { charA, charB };
     }
 
+public:
     ~GameRoom() {
         if (_t.joinable()) {
             _gameRunning = false;
