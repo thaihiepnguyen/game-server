@@ -3,14 +3,14 @@
 #include <cmath>
 #include <unordered_map>
 
-enum CommandId
+const enum CommandId
 {
     WAIT_FOR_MATCH = 1,
     BROADCAST = 2,
     OPPONENT_OUT = 3
 };
 
-enum CharacterId
+const enum CharacterId
 {
     ARCHER = 1,
     FIGHTER = 2,
@@ -20,7 +20,7 @@ enum CharacterId
     TENGU = 6,
 };
 
-enum BackgroundId
+const enum BackgroundId
 {
     BRIDGE = 1,
     COUNTRY_SIDE = 2,
@@ -40,16 +40,18 @@ const int WINDOW_HEIGHT = 600;
 
 const float GRAVITY = 2.0f; // Gravity acceleration
 
-const std::unordered_map<std::string, int> CHARACTER_STATES = {
-    {"idle", 0},
-    {"walk", 1},
-    {"jump", 2},
-    {"def", 3},
-    {"hit", 4},
-    {"atk_z", 5},
-    {"atk_x", 6},
-    {"atk_c", 7},
-    {"death", 8}};
+const enum CharacterState
+{
+    IDLE = 0,
+    WALK = 1,
+    JUMP = 2,
+    DEF = 3,
+    HIT = 4,
+    ATK_Z = 5,
+    ATK_X = 6,
+    ATK_C = 7,
+    DEATH = 8
+};
 
 const enum QueuedPacketType {
     MOVE_LEFT = 1,

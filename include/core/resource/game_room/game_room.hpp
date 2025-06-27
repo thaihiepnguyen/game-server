@@ -150,43 +150,43 @@ private:
                 character->moveRight(dt);
             }
 
-            if (character->getState() == CHARACTER_STATES.at("atk_c"))
+            if (character->getState() == CharacterState::ATK_C)
             {
                 if (Time::getCurrentTimeMs() - character->getAtkCTimer() >= character->getAtkCCooldown())
                 {
-                    character->setState(CHARACTER_STATES.at("idle"));
+                    character->setState(CharacterState::IDLE);
                 }
             }
 
-            if (character->getState() == CHARACTER_STATES.at("atk_x"))
+            if (character->getState() == CharacterState::ATK_X)
             {
                 if (Time::getCurrentTimeMs() - character->getAtkXTimer() >= character->getAtkXCooldown())
                 {
-                    character->setState(CHARACTER_STATES.at("idle"));
+                    character->setState(CharacterState::IDLE);
                 }
             }
 
-            if (character->getState() == CHARACTER_STATES.at("atk_z"))
+            if (character->getState() == CharacterState::ATK_Z)
             {
                 if (Time::getCurrentTimeMs() - character->getAtkZTimer() >= character->getAtkZCooldown())
                 {
-                    character->setState(CHARACTER_STATES.at("idle"));
+                    character->setState(CharacterState::IDLE);
                 }
             }
 
-            if (character->getState() == CHARACTER_STATES.at("hit"))
+            if (character->getState() == CharacterState::HIT)
             {
                 if (Time::getCurrentTimeMs() - character->getHitTimer() >= character->getHitCoolDown())
                 {
-                    character->setState(CHARACTER_STATES.at("idle"));
+                    character->setState(CharacterState::IDLE);
                 }
             }
 
-            if (character->getState() == CHARACTER_STATES.at("jump"))
+            if (character->getState() == CharacterState::JUMP)
             {
                 if (character->getIsOnGround())
                 {
-                    character->setState(CHARACTER_STATES.at("idle"));
+                    character->setState(CharacterState::IDLE);
                 }
             }
         }

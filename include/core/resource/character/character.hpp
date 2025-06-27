@@ -49,7 +49,14 @@ private:
 
     std::vector<int> _getStatesBlockingMovement() const
     {
-        return {CHARACTER_STATES.at("def"), CHARACTER_STATES.at("atk_z"), CHARACTER_STATES.at("atk_x"), CHARACTER_STATES.at("atk_c"), CHARACTER_STATES.at("hit"), CHARACTER_STATES.at("death"), CHARACTER_STATES.at("hit")};
+        return {
+            CharacterState::DEF,
+            CharacterState::ATK_Z,
+            CharacterState::ATK_X,
+            CharacterState::ATK_C,
+            CharacterState::HIT,
+            CharacterState::DEATH,
+        };
     }
 
 public:
@@ -66,7 +73,7 @@ public:
     int getState() const { return _state; }
     bool getIsFlipped() const { return _isFlipped; }
     bool getIsAlive() const { return _hp > 0; }
-    bool getIsDefending() const { return _state == CHARACTER_STATES.at("def"); }
+    bool getIsDefending() const { return _state == CharacterState::DEF; }
     Rect getRect() const { return _rect; }
     float getVelocityY() const { return _velocityY; }
     float getX() const { return _rect.getX(); }
@@ -123,7 +130,7 @@ public:
     {
         if (Time::getCurrentTimeMs() - _atkZtimer >= _atkZcooldown)
         {
-            _state = CHARACTER_STATES.at("atk_z");
+            _state = CharacterState::ATK_Z;
             _atkZtimer = Time::getCurrentTimeMs();
         }
     }
@@ -132,7 +139,7 @@ public:
     {
         if (Time::getCurrentTimeMs() - _atkXtimer >= _atkXcooldown)
         {
-            _state = CHARACTER_STATES.at("atk_x");
+            _state = CharacterState::ATK_X;
             _atkXtimer = Time::getCurrentTimeMs();
         }
     }
@@ -141,22 +148,22 @@ public:
     {
         if (Time::getCurrentTimeMs() - _atkCtimer >= _atkXcooldown)
         {
-            _state = CHARACTER_STATES.at("atk_c");
+            _state = CharacterState::ATK_C;
             _atkCtimer = Time::getCurrentTimeMs();
         }
     }
 
     Rect *getAttackBox() const
     {
-        if (_state == CHARACTER_STATES.at("atk_z"))
+        if (_state == CharacterState::ATK_Z)
         {
             return getAttackZBox();
         }
-        else if (_state == CHARACTER_STATES.at("atk_x"))
+        else if (_state == CharacterState::ATK_X)
         {
             return getAttackXBox();
         }
-        else if (_state == CHARACTER_STATES.at("atk_c"))
+        else if (_state == CharacterState::ATK_C)
         {
             return getAttackCBox();
         }
@@ -249,7 +256,7 @@ public:
             return; // Cannot jump if in a blocking state
         }
 
-        _state = CHARACTER_STATES.at("jump");
+        _state = CharacterState::JUMP;
 
         if (getIsOnGround())
         {
@@ -271,7 +278,7 @@ public:
         setIsMovingLeft(false);
         setIsMovingRight(false);
 
-        _state = CHARACTER_STATES.at("idle");
+        _state = CharacterState::IDLE;
     }
 
     void moveLeft(float dt)
@@ -292,9 +299,9 @@ public:
         float x = std::max(0.0f, std::min(_rect.getX() + dx, static_cast<float>(WINDOW_WIDTH - _rect.getWidth())));
 
         _rect.setX(x);
-        if (_state != CHARACTER_STATES.at("jump") && _state != CHARACTER_STATES.at("walk"))
+        if (_state != CharacterState::JUMP && _state != CharacterState::WALK)
         {
-            _state = CHARACTER_STATES.at("walk");
+            _state = CharacterState::WALK;
         }
     }
 
@@ -316,9 +323,9 @@ public:
         float x = std::max(0.0f, std::min(_rect.getX() + dx, static_cast<float>(WINDOW_WIDTH - _rect.getWidth())));
 
         _rect.setX(x);
-        if (_state != CHARACTER_STATES.at("jump") && _state != CHARACTER_STATES.at("walk"))
+        if (_state != CharacterState::JUMP && _state != CharacterState::WALK)
         {
-            _state = CHARACTER_STATES.at("walk");
+            _state = CharacterState::WALK;
         }
     }
 
@@ -328,7 +335,7 @@ public:
         {
             return;
         }
-        _state = CHARACTER_STATES.at("def");
+        _state = CharacterState::DEF;
     }
 
     void undefend()
@@ -337,7 +344,7 @@ public:
         {
             return;
         }
-        _state = CHARACTER_STATES.at("idle");
+        _state = CharacterState::IDLE;
     }
 
     void hit(int damage, int knockback = 15)
@@ -354,11 +361,11 @@ public:
         if (_hp <= 0)
         {
             _hp = 0;
-            _state = CHARACTER_STATES.at("death");
+            _state = CharacterState::DEATH;
         }
         else
         {
-            _state = CHARACTER_STATES.at("hit");
+            _state = CharacterState::HIT;
         }
 
         // Apply knockback
