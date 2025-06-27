@@ -37,10 +37,20 @@ public:
                  _y + _height < other._y || _y > other._y + other._height);
     }
 
-    float clip(const Rect &other)
+    Rect* clip(const Rect &other)
     {
-        float x_overlap = std::max(0.0f, std::min(getRight(), other.getRight()) - std::max(getX(), other.getX()));
-        float y_overlap = std::max(0.0f, std::min(getBottom(), other.getBottom()) - std::max(getY(), other.getY()));
-        return x_overlap * y_overlap;
+        float x1 = std::max(getX(), other.getX());
+        float y1 = std::max(getY(), other.getY());
+        float x2 = std::min(getRight(), other.getRight());
+        float y2 = std::min(getBottom(), other.getBottom());
+
+        float width = x2 - x1;
+        float height = y2 - y1;
+
+        if (width <= 0.0f || height <= 0.0f) {
+            return nullptr; // No intersection
+        }
+
+        return new Rect(x1, y1, width, height);
     }
 };

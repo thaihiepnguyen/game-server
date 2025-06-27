@@ -5,9 +5,7 @@
 #include "core/fighting_app.hpp"
 #include "service/room_service.hpp"
 #include "service/resource_service.hpp"
-#include "service/broadcast_service.hpp"
 #include "command/join_room_command.hpp"
-#include "command/broadcast_command.hpp"
 #include "core/util/const.hpp"
 
 using asio::ip::tcp;
@@ -21,9 +19,7 @@ int main()
     fightingApp
         ->registerService(new ResourceService())
         ->registerService(new RoomService())
-        ->registerService(new BroadcastService())
-        ->registerCommand(CommandId::WAIT_FOR_MATCH, new JoinRoomCommand())
-        ->registerCommand(CommandId::BROADCAST, new BroadcastCommand());
+        ->registerCommand(CommandId::WAIT_FOR_MATCH, new JoinRoomCommand());
 
     std::cout
         << "Server is running on port " << PORT << "\n";

@@ -7,7 +7,8 @@ const enum CommandId
 {
     WAIT_FOR_MATCH = 1,
     BROADCAST = 2,
-    OPPONENT_OUT = 3
+    OPPONENT_OUT = 3,
+    MOVE = 3,
 };
 
 const enum CharacterId
@@ -63,6 +64,4 @@ const enum QueuedPacketType {
     JUMP = 7,
     DEFEND = 8,
     UNDEFEND = 9,
-    HIT = 10,
-    DEATH = 11,
 };

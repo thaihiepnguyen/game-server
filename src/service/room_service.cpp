@@ -2,6 +2,7 @@
 #include "core/resource/character/character.hpp"
 #include <unordered_map>
 #include "core/util/const.hpp"
+#include <thread>
 
 void RoomService::_createRoom(const std::shared_ptr<TCPConnection> &player1, const std::shared_ptr<TCPConnection> &player2)
 {
@@ -24,6 +25,7 @@ void RoomService::_createRoom(const std::shared_ptr<TCPConnection> &player1, con
     std::shared_ptr<IEnvironment> environment(_resourceService->createEnvironment(background));
 
     _rooms[roomId] = std::make_shared<GameRoom>(players, environment);
+    _rooms[roomId]->start();
 
     for (const auto &player : players)
     {

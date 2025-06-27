@@ -38,7 +38,7 @@ private:
     bool _is_moving_left;
     bool _is_moving_right;
 
-    Rect *_getDefaultAttackBox() const
+    Rect *_getDefaultAttackRect() const
     {
         float width = _rect.getWidth() * 1.2f;
         float height = _rect.getHeight() * 0.3f;
@@ -153,19 +153,19 @@ public:
         }
     }
 
-    Rect *getAttackBox() const
+    Rect *getAttackRect() const
     {
         if (_state == CharacterState::ATK_Z)
         {
-            return getAttackZBox();
+            return getAttackZRect();
         }
         else if (_state == CharacterState::ATK_X)
         {
-            return getAttackXBox();
+            return getAttackXRect();
         }
         else if (_state == CharacterState::ATK_C)
         {
-            return getAttackCBox();
+            return getAttackCRect();
         }
         return nullptr;
     }
@@ -227,19 +227,19 @@ public:
     }
 
 protected:
-    Rect *getAttackZBox() const
+    Rect *getAttackZRect() const
     {
-        return _getDefaultAttackBox();
+        return _getDefaultAttackRect();
     }
 
-    Rect *getAttackXBox() const
+    Rect *getAttackXRect() const
     {
-        return _getDefaultAttackBox();
+        return _getDefaultAttackRect();
     }
 
-    Rect *getAttackCBox() const
+    Rect *getAttackCRect() const
     {
-        return _getDefaultAttackBox();
+        return _getDefaultAttackRect();
     }
 
 public:
@@ -335,6 +335,7 @@ public:
         {
             return;
         }
+
         _state = CharacterState::DEF;
     }
 
@@ -344,12 +345,13 @@ public:
         {
             return;
         }
+
         _state = CharacterState::IDLE;
     }
 
     void hit(int damage, int knockback = 15)
     {
-        if (!getIsAlive())
+        if (!getIsAlive() || _state == CharacterState::HIT)
         {
             return;
         }
