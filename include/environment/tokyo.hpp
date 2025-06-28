@@ -4,5 +4,5 @@
 class Tokyo : public IEnvironment
 {
 public:
-    Tokyo() : IEnvironment(4.3f / 5.0f) {}
+    Tokyo() : IEnvironment(4.7f / 5.0f) {}
 };

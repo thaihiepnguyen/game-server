@@ -31,18 +31,18 @@ public:
     void setWidth(float width) { _width = width; }
     void setHeight(float height) { _height = height; }
 
-    bool collidesWith(const Rect &other) const
+    bool collidesWith(const Rect* other) const
     {
-        return !(_x + _width < other._x || _x > other._x + other._width ||
-                 _y + _height < other._y || _y > other._y + other._height);
+        return !(_x + _width < other->_x || _x > other->_x + other->_width ||
+                 _y + _height < other->_y || _y > other->_y + other->_height);
     }
 
-    Rect* clip(const Rect &other)
+    Rect* clip(const Rect* other) const
     {
-        float x1 = std::max(getX(), other.getX());
-        float y1 = std::max(getY(), other.getY());
-        float x2 = std::min(getRight(), other.getRight());
-        float y2 = std::min(getBottom(), other.getBottom());
+        float x1 = std::max(getX(), other->getX());
+        float y1 = std::max(getY(), other->getY());
+        float x2 = std::min(getRight(), other->getRight());
+        float y2 = std::min(getBottom(), other->getBottom());
 
         float width = x2 - x1;
         float height = y2 - y1;

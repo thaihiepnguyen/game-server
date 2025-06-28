@@ -18,6 +18,7 @@ private:
     std::shared_ptr<Provider> _provider;
     std::unordered_map<int, std::shared_ptr<ICommand>> _commands;
     void _handleCommand(const std::shared_ptr<TCPConnection> &connection, int commandId, const char *data, std::size_t length);
+    void _buildRelationship();
 
 public:
     FightingGameApplication();

@@ -3,7 +3,6 @@
 #include "core/command/command.hpp"
 #include "core/service/provider.hpp"
 #include "service/room_service.hpp"
-#include <iostream>
 
 class JoinRoomCommand : public ICommand
 {

@@ -4,6 +4,6 @@
 
 struct QueuedPacket
 {
-    const std::shared_ptr<TCPConnection> &connection; // which connection this packet is for
-    const int packetType;                             // type of packet, e.g., attack, move, etc.
+    std::shared_ptr<TCPConnection> connection; // which connection this packet is for
+    int packetType;                             // type of packet, e.g., attack, move, etc.
 };

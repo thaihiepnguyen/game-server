@@ -8,27 +8,35 @@
 #include "core/resource/environment/environment.hpp"
 #include "core/util/const.hpp"
 #include "protocol/broadcast_packet.hpp"
+#include "protocol/end_game_packet.hpp"
 #include <chrono>
 #include <queue>
 #include <mutex>
+#include <unordered_map>
+#include <condition_variable>
+
+typedef std::unordered_map<std::shared_ptr<TCPConnection>, std::shared_ptr<ICharacter>> player_pool;
 
 class GameRoom // GameWorld
 {
+public:
+    static std::condition_variable cv;
+    static std::mutex cv_mtx;
 private:
     std::mutex _mtx;
     std::thread _t;
 
-    std::vector<std::pair<std::shared_ptr<TCPConnection>, std::shared_ptr<ICharacter>>> _players;
-    std::shared_ptr<IEnvironment> _environment;
+    player_pool _players;
     bool _gameRunning = true;
+    std::shared_ptr<IEnvironment> _environment;
     const float TICK_DURATION = 0.02f; // 20ms per tick
     std::queue<QueuedPacket> _packetQueue;
     float _groundY;
 
 public:
-    GameRoom(std::vector<std::pair<std::shared_ptr<TCPConnection>, std::shared_ptr<ICharacter>>> players, std::shared_ptr<IEnvironment> environment)
+    GameRoom(player_pool players, std::shared_ptr<IEnvironment> environment)
         : _players(std::move(players)), _environment(environment) {
-        _groundY = _environment->getGroundYRatio() / WINDOW_HEIGHT;
+        _groundY = _environment->getGroundYRatio() * WINDOW_HEIGHT;
         }
 
     std::vector<std::shared_ptr<TCPConnection>> getConnections() const
@@ -40,16 +48,15 @@ public:
         }
         return connections;
     }
-
+    
     void start()
     {
         _t = std::thread(&GameRoom::_startGameLoop, this);
     }
 
-    void stop()
+    bool isGameRunning() const
     {
-        _gameRunning = false;
-        _t.join();
+        return _gameRunning;
     }
 
     void enqueuePacket(QueuedPacket packet)
@@ -81,9 +88,19 @@ private:
 
         // update collisions
         _updateCollisions();
-
+        
         // broadcast
         _broadcastUpdate();
+
+        // check end game
+        if (_isEndGame())
+        {
+            _gameRunning = false;
+            std::unique_lock<std::mutex> locker(cv_mtx);
+            locker.unlock();
+            cv.notify_one();
+            return;
+        }
     }
 
     void _processQueuedPackets(float dt)
@@ -149,15 +166,16 @@ private:
         {
             auto character = player.second;
 
-            float dy = character->getVelocityY() + GRAVITY;
+            float dy = character->getVelocityY() + GRAVITY * 50 * dt;
             character->setVelocityY(dy);
             
             character->setY(character->getY() + dy);
 
             auto rect = character->getRect();
-            if (rect.getBottom() >= _groundY)
+
+            if (rect->getBottom() >= _groundY)
             {
-                rect.setBottom(_groundY);
+                rect->setBottom(_groundY);
                 character->setVelocityY(0.0f);
             }
         }
@@ -165,6 +183,9 @@ private:
 
     void _updateCharacterStates(float dt)
     {
+        auto characters = _getCharacters();
+        characters[0]->lookAt(characters[1].get());
+        characters[1]->lookAt(characters[0].get());
         for (auto &player : _players)
         {
             auto character = player.second;
@@ -224,75 +245,168 @@ private:
 
     void _updateCollisions()
     {
-        auto [charA, charB] = _getCharacters();
+        auto characters = _getCharacters();
+        if (characters.size() < 2)
+        {
+            // TODO: handle error
+            return;
+        }
         
-        _updateInteractBetween(charA, charB);
-        _updateInteractBetween(charB, charA);
+        _updateInteractionBetween(characters[0], characters[1]);
+        _updateInteractionBetween(characters[1], characters[0]);
     }
 
     void _broadcastUpdate()
     {
         auto connections = getConnections();
-        for (const auto &player : _players)
+        auto characters = _getCharacters();
+
+        if (characters.size() != 2)
         {
-            auto character = player.second;
+            // TODO: handle error
+            return;
+        }
 
+        if (connections.size() != 2)
+        {
+            // TODO: handle error
+            return;
+        }
+
+        for (int i = 0; i < 2; ++i)
+        {
             BroadcastPacket packet;
-            packet.commandId = CommandId::BROADCAST;
+            packet.commandId = CommandId::C_BROADCAST;
             packet.length = sizeof(BroadcastDataPacket);
-            packet.hp = character->getHp();
-            packet.x = character->getX();
-            packet.y = character->getY();
-            packet.state = character->getState();
 
-            for (const auto &conn : connections)
-            {
-                conn->send(packet.toBuffer(), sizeof(BroadcastPacket));
-            }
+            // Current player
+            packet.hp_c = characters[i]->getHp();
+            packet.x_c = characters[i]->getX();
+            packet.y_c = characters[i]->getY();
+            packet.state_c = characters[i]->getState();
+
+            // Opponent
+            int opp = 1 - i;
+            packet.hp_o = characters[opp]->getHp();
+            packet.x_o = characters[opp]->getX();
+            packet.y_o = characters[opp]->getY();
+            packet.state_o = characters[opp]->getState();
+
+            connections[i]->send(packet.toBuffer(), sizeof(BroadcastPacket));
         }
     }
 
-    void _updateInteractBetween(std::shared_ptr<ICharacter> character, std::shared_ptr<ICharacter> opponent)
+    void _updateInteractionBetween(std::shared_ptr<ICharacter> character, std::shared_ptr<ICharacter> opponent)
     {
         auto attackRect = character->getAttackRect();
 
         if (attackRect != nullptr && attackRect->collidesWith(opponent->getRect()) && !opponent->getIsDefending())
         {
-            std::shared_ptr<Rect> intersection(attackRect->clip(opponent->getRect()));
+            // std::shared_ptr<Rect> intersection(attackRect->clip(opponent->getRect()));
             
-            if (intersection != nullptr)
-            {
-                float damgeRatio = intersection->getWidth() / opponent->getRect().getWidth();
-                opponent->hit((int)damgeRatio);
-            }
+            // if (intersection != nullptr)
+            // {
+            //     float damgeRatio = intersection->getWidth() / opponent->getRect()->getWidth();
+            //     opponent->hit((int)damgeRatio);
+            // }
+            float damgeRatio = character->getAttackDamage();
+            opponent->hit((int)damgeRatio);
         }
+    }
+
+    bool _isEndGame()
+    {
+        auto characters = _getCharacters();
+        auto connections = getConnections();
+
+        if (characters.size() != 2)
+        {
+            // TODO: handle error
+            return true;
+        }
+
+        if (connections.size() != 2)
+        {
+            // TODO: handle error
+            return true;
+        }
+
+        // The match drew!
+        if (!characters[0]->getIsAlive() && !characters[1]->getIsAlive())
+        {
+            EndGamePacket packet;
+            packet.commandId = CommandId::C_END_GAME;
+            packet.length = sizeof(EndGameDataPacket);
+
+            packet.result = 3;
+            
+            for (const auto &conn : connections)
+            {
+                conn->send(packet.toBuffer(), sizeof(EndGamePacket));
+            }
+
+            return true;
+        }
+
+        // Player 1 win
+        if (characters[0]->getIsAlive() && !characters[1]->getIsAlive())
+        {
+            EndGamePacket packet;
+            packet.commandId = CommandId::C_END_GAME;
+            packet.length = sizeof(EndGameDataPacket);
+
+            packet.result = 1; // win
+            connections[0]->send(packet.toBuffer(), sizeof(EndGamePacket));
+            packet.result = 2; // lost
+            connections[1]->send(packet.toBuffer(), sizeof(EndGamePacket));
+
+            return true;
+        }
+
+        // Player 2 win
+        if (!characters[0]->getIsAlive() && characters[1]->getIsAlive())
+        {
+            EndGamePacket packet;
+            packet.commandId = CommandId::C_END_GAME;
+            packet.length = sizeof(EndGameDataPacket);
+
+            packet.result = 1; // win
+            connections[1]->send(packet.toBuffer(), sizeof(EndGamePacket));
+            packet.result = 2; // lost
+            connections[0]->send(packet.toBuffer(), sizeof(EndGamePacket));
+
+            return true;
+        }
+
+        return false;
     }
 
     std::shared_ptr<ICharacter> _getCharacterByConnection(std::shared_ptr<TCPConnection> conn)
     {
-        for (const auto &player : _players)
-        {
-            if (player.first == conn)
-            {
-                return player.second;
-            }
+        auto it = _players.find(conn);
+        if (it != _players.end()) {
+            return it->second;
         }
-
         return nullptr;
     }
 
-    std::pair<std::shared_ptr<ICharacter>, std::shared_ptr<ICharacter>> _getCharacters()
+    std::vector<std::shared_ptr<ICharacter>> _getCharacters()
     {
-        auto charA = _players[0].second;
-        auto charB = _players[1].second;
+        std::vector<std::shared_ptr<ICharacter>> result;
+        for (const auto &player : _players)
+        {
+            result.push_back(player.second);
+        }
 
-        return { charA, charB };
+        return result;
     }
 
 public:
-    ~GameRoom() {
-        if (_t.joinable()) {
-            _gameRunning = false;
+    ~GameRoom()
+    {
+        _gameRunning = false;
+        if (_t.joinable())
+        {
             _t.join();
         }
     }

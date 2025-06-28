@@ -17,9 +17,10 @@ void RoomService::_createRoom(const std::shared_ptr<TCPConnection> &player1, con
     std::shared_ptr<ICharacter> character1Ptr(_resourceService->createCharacter(character1, 100, 200, false));
     std::shared_ptr<ICharacter> character2Ptr(_resourceService->createCharacter(character2, WINDOW_WIDTH - 100, 200, true));
 
-    std::vector<std::pair<std::shared_ptr<TCPConnection>, std::shared_ptr<ICharacter>>> players = {
-        {player1, character1Ptr},
-        {player2, character2Ptr}};
+    std::unordered_map<std::shared_ptr<TCPConnection>, std::shared_ptr<ICharacter>> players;
+    
+    players[player1] = character1Ptr;
+    players[player2] = character2Ptr;
 
     // Create the environment for the game room
     std::shared_ptr<IEnvironment> environment(_resourceService->createEnvironment(background));
@@ -30,7 +31,10 @@ void RoomService::_createRoom(const std::shared_ptr<TCPConnection> &player1, con
     for (const auto &player : players)
     {
         player.first->events.subscribe("disconnect", [this, conn = player.first, roomId]()
-                                       { _rooms.erase(roomId); });
+                                    {
+                                        // TODO: consider to notify another of disconnect. 
+                                        _rooms.erase(roomId); 
+                                    });
     }
 
     // Notify both players about the room creation
@@ -46,7 +50,7 @@ void RoomService::_notifyRoomCreated(
     const std::string &side = "left")
 {
     RoomPacket packet;
-    packet.commandId = CommandId::WAIT_FOR_MATCH;
+    packet.commandId = CommandId::C_WAIT_FOR_MATCH;
     packet.length = sizeof(RoomDataPacket);
     packet.character1 = character;
     packet.character2 = opponent;
@@ -116,4 +120,36 @@ std::shared_ptr<TCPConnection> RoomService::getOpponentConnection(const std::sha
         }
     }
     return nullptr; // No opponent found
+}
+
+std::shared_ptr<GameRoom> RoomService::getGameRoomByConnection(const std::shared_ptr<TCPConnection> &connection) const
+{
+    long long roomId = getRoomIdByConnection(connection);
+    auto it = _rooms.find(roomId);
+    if (it != _rooms.end()) {
+        return it->second;
+    }
+    return nullptr;
+}
+
+
+void RoomService::_cleanRoom()
+{
+    while (1)
+    {
+        std::unique_lock<std::mutex> locker(GameRoom::cv_mtx);
+        GameRoom::cv.wait(locker);
+
+        for (auto it = _rooms.begin(); it != _rooms.end(); )
+        {
+            if (!it->second->isGameRunning())
+            {
+                it = _rooms.erase(it);
+            }
+            else
+            {
+                ++it;
+            }
+        }
+    }
 }

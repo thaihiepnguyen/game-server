@@ -5,13 +5,14 @@
 #include "core/util/time.hpp"
 #include <cmath>
 #include <algorithm>
+#include <iostream>
 class ICharacter
 {
 private:
     int _hp;
     int _maxHp;
     int _armor; // Armor value, if applicable
-    Rect _rect;
+    Rect *_rect;
     int _state;      // 0 for idle, 1 for attack, etc.
     int _atkZdamage; // Damage dealt by attack z
     int _atkXdamage; // Damage dealt by attack x
@@ -35,15 +36,15 @@ private:
     float _hitTimer; // Timer for hit cooldown
 
     // flags
-    bool _is_moving_left;
-    bool _is_moving_right;
+    bool _isMovingLeft;
+    bool _isMovingRight;
 
     Rect *_getDefaultAttackRect() const
     {
-        float width = _rect.getWidth() * 1.2f;
-        float height = _rect.getHeight() * 0.3f;
-        float x = _isFlipped ? _rect.getCenterX() - width : _rect.getCenterX();
-        float y = _rect.getY() + _rect.getHeight() * 0.5f - height * 0.5f;
+        float width = _rect->getWidth() * 2.0f;
+        float height = _rect->getHeight() * 0.3f;
+        float x = _isFlipped ? _rect->getCenterX() - width : _rect->getCenterX();
+        float y = _rect->getY() + _rect->getHeight() * 0.5f - height * 0.5f;
         return new Rect(x, y, width, height);
     }
 
@@ -61,7 +62,7 @@ private:
 
 public:
     ICharacter(float x, float y, bool isFlipped = false)
-        : _hp(100), _maxHp(100), _rect(x, y, CHARACTER_WIDTH, CHARACTER_HEIGHT), _state(0), _atkZdamage(setAtkZDamage()), _atkXdamage(setAtkXDamage()), _atkCdamage(setAtkCDamage()), _isFlipped(isFlipped), _atkZtimer(0.0f), _atkXtimer(0.0f), _atkCtimer(0.0f), _velocityY(0.0f), _speed(setSpeed()), _weight(setWeight()), _jumpHeight(setJumpHeight()), _armor(setArmor()), _atkZcooldown(setAtkZCooldown()), _atkXcooldown(setAtkXCooldown()), _atkCcooldown(setAtkCCooldown()), _is_moving_left(false), _is_moving_right(false), _hitCoolDown(setHitCooldown()),
+        : _hp(100), _maxHp(100), _rect(new Rect(x, y, CHARACTER_WIDTH, CHARACTER_HEIGHT)), _state(0), _atkZdamage(setAtkZDamage()), _atkXdamage(setAtkXDamage()), _atkCdamage(setAtkCDamage()), _isFlipped(isFlipped), _atkZtimer(0.0f), _atkXtimer(0.0f), _atkCtimer(0.0f), _velocityY(0.0f), _speed(setSpeed()), _weight(setWeight()), _jumpHeight(setJumpHeight()), _armor(setArmor()), _atkZcooldown(setAtkZCooldown()), _atkXcooldown(setAtkXCooldown()), _atkCcooldown(setAtkCCooldown()), _isMovingLeft(false), _isMovingRight(false), _hitCoolDown(setHitCooldown()),
         _hitTimer(0.0f)
     {
     }
@@ -74,12 +75,12 @@ public:
     bool getIsFlipped() const { return _isFlipped; }
     bool getIsAlive() const { return _hp > 0; }
     bool getIsDefending() const { return _state == CharacterState::DEF; }
-    Rect getRect() const { return _rect; }
+    Rect* getRect() const { return _rect; }
     float getVelocityY() const { return _velocityY; }
-    float getX() const { return _rect.getX(); }
-    float getY() const { return _rect.getY(); }
-    bool getIsMovingLeft() const { return _is_moving_left; }
-    bool getIsMovingRight() const { return _is_moving_right; }
+    float getX() const { return _rect->getX(); }
+    float getY() const { return _rect->getY(); }
+    bool getIsMovingLeft() const { return _isMovingLeft; }
+    bool getIsMovingRight() const { return _isMovingRight; }
     bool getIsOnGround() const { return _velocityY == 0.0f; }
 
     float getAtkXCooldown() const { return _atkXcooldown; }
@@ -96,33 +97,33 @@ public:
     void setHp(int hp) { _hp = hp; }
     void setState(int state) { _state = state; }
     void setFlipped(bool isFlipped) { _isFlipped = isFlipped; }
-    void setX(float x) { _rect.setX(x); }
-    void setY(float y) { _rect.setY(y); }
-    void setWidth(float width) { _rect.setWidth(width); }
-    void setHeight(float height) { _rect.setHeight(height); }
+    void setX(float x) { _rect->setX(x); }
+    void setY(float y) { _rect->setY(y); }
+    void setWidth(float width) { _rect->setWidth(width); }
+    void setHeight(float height) { _rect->setHeight(height); }
     void setVelocityY(float velocityY) { _velocityY = velocityY; }
     void setIsMovingLeft(bool value) 
     {
         if (value == true)
         {
-            _is_moving_left = true;
-            _is_moving_right = false;
+            _isMovingLeft = true;
+            _isMovingRight = false;
         } 
         else
         {
-            _is_moving_left = false;
+            _isMovingLeft = false;
         }
     }
     void setIsMovingRight(bool value)
     {
         if (value == true)
         {
-            _is_moving_right = true;
-            _is_moving_left = false;
+            _isMovingRight = true;
+            _isMovingLeft = false;
         }
         else
         {
-            _is_moving_right = false;
+            _isMovingRight = false;
         }
     }
 
@@ -170,7 +171,28 @@ public:
         return nullptr;
     }
 
-    virtual ~ICharacter() = default;
+    float getAttackDamage()
+    {
+        if (_state == CharacterState::ATK_Z)
+        {
+            return _atkZdamage;
+        }
+        else if (_state == CharacterState::ATK_X)
+        {
+            return _atkXdamage;
+        }
+        else if (_state == CharacterState::ATK_C)
+        {
+            return _atkCdamage;
+        }
+        return 0.0;
+    }
+
+    virtual ~ICharacter()
+    {
+        delete _rect;
+    }
+    
     virtual int setSpeed()
     {
         return 200;
@@ -243,7 +265,7 @@ protected:
     }
 
 public:
-    void jump()
+    virtual void jump()
     {
         if (!getIsAlive())
         {
@@ -270,11 +292,15 @@ public:
             return;    
         }
         
-        _isFlipped = (_rect.getCenterX() > other->getRect().getCenterX());
+        _isFlipped = (_rect->getCenterX() > other->getRect()->getCenterX());
     }
 
     void stopMovement()
     {
+        if (!getIsAlive()) {
+            return;    
+        }
+
         setIsMovingLeft(false);
         setIsMovingRight(false);
 
@@ -287,6 +313,7 @@ public:
         {
             return;
         }
+
         std::vector<int> statesBlockingMovement = _getStatesBlockingMovement();
 
         if (std::find(statesBlockingMovement.begin(), statesBlockingMovement.end(), _state) != statesBlockingMovement.end())
@@ -296,9 +323,9 @@ public:
 
         float dx = -_speed * dt;
 
-        float x = std::max(0.0f, std::min(_rect.getX() + dx, static_cast<float>(WINDOW_WIDTH - _rect.getWidth())));
+        float x = std::max(0.0f, std::min(_rect->getX() + dx, static_cast<float>(WINDOW_WIDTH - _rect->getWidth())));
 
-        _rect.setX(x);
+        _rect->setX(x);
         if (_state != CharacterState::JUMP && _state != CharacterState::WALK)
         {
             _state = CharacterState::WALK;
@@ -311,6 +338,7 @@ public:
         {
             return;
         }
+
         std::vector<int> statesBlockingMovement = _getStatesBlockingMovement();
 
         if (std::find(statesBlockingMovement.begin(), statesBlockingMovement.end(), _state) != statesBlockingMovement.end())
@@ -320,9 +348,9 @@ public:
 
         float dx = _speed * dt;
 
-        float x = std::max(0.0f, std::min(_rect.getX() + dx, static_cast<float>(WINDOW_WIDTH - _rect.getWidth())));
+        float x = std::max(0.0f, std::min(_rect->getX() + dx, static_cast<float>(WINDOW_WIDTH - _rect->getWidth())));
 
-        _rect.setX(x);
+        _rect->setX(x);
         if (_state != CharacterState::JUMP && _state != CharacterState::WALK)
         {
             _state = CharacterState::WALK;
@@ -355,7 +383,7 @@ public:
         {
             return;
         }
-
+        
         // Apply armor reduction
         int effectiveDamage = std::max(0, damage - _armor);
         _hp -= effectiveDamage;
@@ -371,8 +399,8 @@ public:
         }
 
         // Apply knockback
-        float knockbackDistance = knockback * (_isFlipped ? -1 : 1);
-        float newX = std::max(0.0f, std::min(_rect.getX() + knockbackDistance, static_cast<float>(WINDOW_WIDTH - _rect.getWidth())));
+        float knockbackDistance = knockback * (_isFlipped ? 1 : -1);
+        float newX = std::max(0.0f, std::min(_rect->getX() + knockbackDistance, static_cast<float>(WINDOW_WIDTH - _rect->getWidth())));
 
         setX(newX);
 

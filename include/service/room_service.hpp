@@ -10,6 +10,7 @@
 #include "protocol/room_packet.hpp"
 #include "service/resource_service.hpp"
 #include "core/service/provider.hpp"
+#include <thread>
 
 class RoomService : public IService
 {
@@ -31,10 +32,17 @@ private:
 
     void _removeConnection(const std::shared_ptr<TCPConnection> &connection);
 
-public:
+    void _cleanRoom();
+
     void inject(std::shared_ptr<Provider> provider) override
     {
         _resourceService = provider->getService<ResourceService>();
+    }
+public:
+    RoomService()
+    {
+        std::thread t(&RoomService::_cleanRoom, this);
+        t.detach();
     }
 
     void waitForRoom(const std::shared_ptr<TCPConnection> &connection);
@@ -42,4 +50,6 @@ public:
     long long getRoomIdByConnection(const std::shared_ptr<TCPConnection> &connection) const;
 
     std::shared_ptr<TCPConnection> getOpponentConnection(const std::shared_ptr<TCPConnection> &connection) const;
+
+    std::shared_ptr<GameRoom> getGameRoomByConnection(const std::shared_ptr<TCPConnection> &connection) const;
 };

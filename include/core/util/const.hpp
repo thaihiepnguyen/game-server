@@ -5,10 +5,13 @@
 
 enum CommandId
 {
-    WAIT_FOR_MATCH = 1,
-    BROADCAST = 2,
-    OPPONENT_OUT = 3,
-    MOVE = 3,
+    C_WAIT_FOR_MATCH = 1,
+    C_BROADCAST = 2,
+    C_MOVE = 3,
+    C_DEF = 4,
+    C_JUMP = 5,
+    C_ATK = 6,
+    C_END_GAME = 7,
 };
 
 enum CharacterId

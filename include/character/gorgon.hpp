@@ -20,6 +20,11 @@ public:
         return 3; // Gorgon is nimble and has light armor
     }
 
+    void jump() override
+    {
+        return;
+    }
+
     int setJumpHeight() override
     {
         return 0; // Gorgon has no jump height

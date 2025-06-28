@@ -8,6 +8,19 @@ FightingGameApplication::FightingGameApplication()
     _provider = std::make_shared<Provider>();
 }
 
+void FightingGameApplication::_buildRelationship()
+{
+    for (auto &command : _commands) 
+    {
+        command.second->inject(_provider);
+    }
+
+    for (auto &service : _provider->_services)
+    {
+        service.second->inject(_provider);
+    }
+}
+
 void FightingGameApplication::_handleCommand(const std::shared_ptr<TCPConnection> &connection, int commandId, const char *data, std::size_t length)
 {
     auto it = _commands.find(commandId);
@@ -25,7 +38,6 @@ FightingGameApplication *FightingGameApplication::registerCommand(int commandId,
 {
     std::shared_ptr<ICommand> cmdPtr(command);
     _commands[commandId] = cmdPtr;
-    _commands[commandId]->inject(_provider);
 
     return this;
 }
@@ -34,13 +46,13 @@ FightingGameApplication *FightingGameApplication::registerService(IService *serv
 {
     std::shared_ptr<IService> servicePtr(service);
     _provider->addService(servicePtr);
-    servicePtr->inject(_provider);
 
     return this;
 }
 
 void FightingGameApplication::start(unsigned short port)
 {
+    _buildRelationship();
     auto server = std::make_shared<TCPServer>();
 
     if (server->bind(port))
