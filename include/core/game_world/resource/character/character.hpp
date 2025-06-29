@@ -103,309 +103,67 @@ public:
     void setWidth(float width) { _rect->setWidth(width); }
     void setHeight(float height) { _rect->setHeight(height); }
     void setVelocityY(float velocityY) { _velocityY = velocityY; }
-    void setIsMovingLeft(bool value) 
-    {
-        if (value == true)
-        {
-            _isMovingLeft = true;
-            _isMovingRight = false;
-        } 
-        else
-        {
-            _isMovingLeft = false;
-        }
-    }
-    void setIsMovingRight(bool value)
-    {
-        if (value == true)
-        {
-            _isMovingRight = true;
-            _isMovingLeft = false;
-        }
-        else
-        {
-            _isMovingRight = false;
-        }
-    }
+    void setIsMovingLeft(bool value);
+    void setIsMovingRight(bool value);
 
-    void attackZ()
-    {
-        if (Time::getCurrentTimeMs() - _atkZtimer >= _atkZcooldown)
-        {
-            _state = CharacterState::ATK_Z;
-            _atkZtimer = Time::getCurrentTimeMs();
-        }
-    }
+    void attackZ();
 
-    void attackX()
-    {
-        if (Time::getCurrentTimeMs() - _atkXtimer >= _atkXcooldown)
-        {
-            _state = CharacterState::ATK_X;
-            _atkXtimer = Time::getCurrentTimeMs();
-        }
-    }
+    void attackX();
 
-    void attackC()
-    {
-        if (Time::getCurrentTimeMs() - _atkCtimer >= _atkXcooldown)
-        {
-            _state = CharacterState::ATK_C;
-            _atkCtimer = Time::getCurrentTimeMs();
-        }
-    }
+    void attackC();
 
-    Rect *getAttackRect() const
-    {
-        if (_state == CharacterState::ATK_Z)
-        {
-            return getAttackZRect();
-        }
-        else if (_state == CharacterState::ATK_X)
-        {
-            return getAttackXRect();
-        }
-        else if (_state == CharacterState::ATK_C)
-        {
-            return getAttackCRect();
-        }
-        return nullptr;
-    }
+    Rect *getAttackRect() const;
 
-    float getAttackDamage()
-    {
-        if (_state == CharacterState::ATK_Z)
-        {
-            return _atkZdamage;
-        }
-        else if (_state == CharacterState::ATK_X)
-        {
-            return _atkXdamage;
-        }
-        else if (_state == CharacterState::ATK_C)
-        {
-            return _atkCdamage;
-        }
-        return 0.0;
-    }
+    float getAttackDamage();
 
     virtual ~ICharacter()
     {
         delete _rect;
     }
     
-    virtual int setSpeed()
-    {
-        return 200;
-    }
+    virtual int setSpeed();
 
-    virtual int setWeight()
-    {
-        return 1;
-    }
+    virtual int setWeight();
 
-    virtual int setJumpHeight()
-    {
-        return 32;
-    }
+    virtual int setJumpHeight();
 
-    virtual int setArmor()
-    {
-        return 3;
-    }
+    virtual int setArmor();
 
-    virtual int setAtkZDamage()
-    {
-        return 10;
-    }
+    virtual int setAtkZDamage();
 
-    virtual int setAtkXDamage()
-    {
-        return 15;
-    }
+    virtual int setAtkXDamage();
 
-    virtual int setAtkCDamage()
-    {
-        return 20;
-    }
+    virtual int setAtkCDamage();
 
-    virtual int setAtkZCooldown()
-    {
-        return 1000; // 1 second cooldown
-    }
+    virtual int setAtkZCooldown();
 
-    virtual int setAtkXCooldown()
-    {
-        return 800; // 0.8 second cooldown
-    }
+    virtual int setAtkXCooldown();
 
-    virtual int setAtkCCooldown()
-    {
-        return 1200; // 1.2 second cooldown
-    }
+    virtual int setAtkCCooldown();
 
-    virtual int setHitCooldown()
-    {
-        return 500; // 0.5 second cooldown
-    }
+    virtual int setHitCooldown();
 
 protected:
-    Rect *getAttackZRect() const
-    {
-        return _getDefaultAttackRect();
-    }
+    Rect *getAttackZRect() const;
 
-    Rect *getAttackXRect() const
-    {
-        return _getDefaultAttackRect();
-    }
+    Rect *getAttackXRect() const;
 
-    Rect *getAttackCRect() const
-    {
-        return _getDefaultAttackRect();
-    }
+    Rect *getAttackCRect() const;
 
 public:
-    virtual void jump(float groundY)
-    {
-        if (!getIsAlive())
-        {
-            return;
-        }
+    virtual void jump(float groundY);
 
-        std::vector<int> statesBlockingMovement = _getStatesBlockingMovement();
-        if (std::find(statesBlockingMovement.begin(), statesBlockingMovement.end(), _state) != statesBlockingMovement.end())
-        {
-            return; // Cannot jump if in a blocking state
-        }
+    void lookAt(ICharacter *other);
 
-        if (getIsOnGround(groundY))
-        {
-            _state = CharacterState::JUMP;
-            _velocityY = -_jumpHeight;
-        }
-    }
+    void stopMovement();
 
-    void lookAt(ICharacter *other)
-    {
-        if (!getIsAlive()) 
-        {
-            return;    
-        }
-        
-        _isFlipped = (_rect->getCenterX() > other->getRect()->getCenterX());
-    }
+    void moveLeft(float dt);
 
-    void stopMovement()
-    {
-        if (!getIsAlive()) 
-        {
-            return;    
-        }
+    void moveRight(float dt);
 
-        setIsMovingLeft(false);
-        setIsMovingRight(false);
+    void defend();
 
-        _state = CharacterState::IDLE;
-    }
+    void undefend();
 
-    void moveLeft(float dt)
-    {
-        if (!getIsAlive())
-        {
-            return;
-        }
-
-        std::vector<int> statesBlockingMovement = _getStatesBlockingMovement();
-
-        if (std::find(statesBlockingMovement.begin(), statesBlockingMovement.end(), _state) != statesBlockingMovement.end())
-        {
-            return; // Cannot move left if in a blocking state
-        }
-
-        float dx = -_speed * dt;
-
-        float x = std::max(0.0f, std::min(_rect->getX() + dx, static_cast<float>(WINDOW_WIDTH - _rect->getWidth())));
-
-        _rect->setX(x);
-        if (_state != CharacterState::JUMP && _state != CharacterState::WALK)
-        {
-            _state = CharacterState::WALK;
-        }
-    }
-
-    void moveRight(float dt)
-    {
-        if (!getIsAlive())
-        {
-            return;
-        }
-
-        std::vector<int> statesBlockingMovement = _getStatesBlockingMovement();
-
-        if (std::find(statesBlockingMovement.begin(), statesBlockingMovement.end(), _state) != statesBlockingMovement.end())
-        {
-            return; // Cannot move right if in a blocking state
-        }
-
-        float dx = _speed * dt;
-
-        float x = std::max(0.0f, std::min(_rect->getX() + dx, static_cast<float>(WINDOW_WIDTH - _rect->getWidth())));
-
-        _rect->setX(x);
-        if (_state != CharacterState::JUMP && _state != CharacterState::WALK)
-        {
-            _state = CharacterState::WALK;
-        }
-    }
-
-    void defend()
-    {
-        if (!getIsAlive())
-        {
-            return;
-        }
-
-        _state = CharacterState::DEF;
-    }
-
-    void undefend()
-    {
-        if (!getIsAlive())
-        {
-            return;
-        }
-
-        _state = CharacterState::IDLE;
-    }
-
-    void hit(int damage, int knockback = 15)
-    {
-        if (!getIsAlive() || _state == CharacterState::HIT)
-        {
-            return;
-        }
-        
-        // Apply armor reduction
-        int effectiveDamage = std::max(0, damage - _armor);
-        _hp -= effectiveDamage;
-
-        if (_hp <= 0)
-        {
-            _hp = 0;
-            _state = CharacterState::DEATH;
-        }
-        else
-        {
-            _state = CharacterState::HIT;
-        }
-
-        // Apply knockback
-        float knockbackDistance = knockback * (_isFlipped ? 1 : -1);
-        float newX = std::max(0.0f, std::min(_rect->getX() + knockbackDistance, static_cast<float>(WINDOW_WIDTH - _rect->getWidth())));
-
-        setX(newX);
-
-        _hitTimer = Time::getCurrentTimeMs();
-    }
+    void hit(int damage, int knockback = 15);
 };
