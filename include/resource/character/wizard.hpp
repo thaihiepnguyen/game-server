@@ -5,33 +5,13 @@
 class Wizard : public ICharacter
 {
 public:
-    Wizard(float x, float y, bool isFlipped = false)
-        : ICharacter(x, y, isFlipped)
+    Wizard(float x, float y)
+        : ICharacter(x, y)
     {
-    }
-
-    int setSpeed() override
-    {
-        return 240; // Wizard has a higher speed
-    }
-
-    int setArmor() override
-    {
-        return 2; // Wizard is nimble and has light armor
-    }
-
-    int setJumpHeight() override
-    {
-        return 40; // Wizard has a higher jump height
-    }
-
-    int setAtkCDamage() override
-    {
-        return 25; // Wizard's C attack deals more damage
-    }
-
-    int setAtkZDamage() override
-    {
-        return 15; // Wizard's Z attack deals moderate damage
+        _speed = 240;
+        _armor = 2;
+        _jumpHeight = 38;
+        _atkCdamage = 25;
+        _atkZdamage = 15;
     }
 };

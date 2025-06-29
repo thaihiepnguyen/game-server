@@ -8,36 +8,36 @@
 #include <iostream>
 class ICharacter
 {
-private:
-    int _hp;
-    int _maxHp;
-    int _armor; // Armor value, if applicable
-    Rect *_rect;
-    int _state;      // 0 for idle, 1 for attack, etc.
-    int _atkZdamage; // Damage dealt by attack z
-    int _atkXdamage; // Damage dealt by attack x
-    int _atkCdamage; // Damage dealt by attack c
+protected:
+    int _hp = 100;
+    int _maxHp = 100;
+    int _armor = 3; // Armor value, if applicable
+    Rect *_rect = nullptr;
+    int _state = 0;      // 0 for idle, 1 for attack, etc.
+    int _atkZdamage = 10; // Damage dealt by attack z
+    int _atkXdamage = 15; // Damage dealt by attack x
+    int _atkCdamage = 20; // Damage dealt by attack c
 
-    bool _isFlipped;   // true for right, false for left
-    int _atkZcooldown; // Cooldown for attack z
-    int _atkXcooldown; // Cooldown for attack x
-    int _atkCcooldown; // Cooldown for attack c
-    int _hitCoolDown;  // Cooldown for hit
+    bool _isFlipped = false;   // true for right, false for left
+    int _atkZcooldown = 1000; // Cooldown for attack z
+    int _atkXcooldown = 800; // Cooldown for attack x
+    int _atkCcooldown = 1200; // Cooldown for attack c
+    int _hitCoolDown = 500;  // Cooldown for hit
 
-    float _velocityY; // Vertical velocity for jumping or falling
-    int _speed;       // Speed of the character, can be used for movement
-    int _weight;      // Weight of the character, can affect jumping and falling
-    int _jumpHeight;  // Height of the jump, if applicable
+    float _velocityY = 0.0f; // Vertical velocity for jumping or falling
+    int _speed = 250;       // Speed of the character, can be used for movement
+    int _weight = 1;      // Weight of the character, can affect jumping and falling
+    int _jumpHeight = 32;  // Height of the jump, if applicable
 
     // timers
-    float _atkZtimer; // Timer for attack z cooldown
-    float _atkXtimer; // Timer for attack x cooldown
-    float _atkCtimer; // Timer for attack c cooldown
-    float _hitTimer; // Timer for hit cooldown
+    float _atkZtimer = 0.0f; // Timer for attack z cooldown
+    float _atkXtimer = 0.0f; // Timer for attack x cooldown
+    float _atkCtimer = 0.0f; // Timer for attack c cooldown
+    float _hitTimer = 0.0f; // Timer for hit cooldown
 
     // flags
-    bool _isMovingLeft;
-    bool _isMovingRight;
+    bool _isMovingLeft = false;
+    bool _isMovingRight = false;
 
     Rect *_getDefaultAttackRect() const
     {
@@ -62,9 +62,8 @@ private:
     }
 
 public:
-    ICharacter(float x, float y, bool isFlipped = false)
-        : _hp(100), _maxHp(100), _rect(new Rect(x, y, CHARACTER_WIDTH, CHARACTER_HEIGHT)), _state(0), _atkZdamage(setAtkZDamage()), _atkXdamage(setAtkXDamage()), _atkCdamage(setAtkCDamage()), _isFlipped(isFlipped), _atkZtimer(0.0f), _atkXtimer(0.0f), _atkCtimer(0.0f), _velocityY(0.0f), _speed(setSpeed()), _weight(setWeight()), _jumpHeight(setJumpHeight()), _armor(setArmor()), _atkZcooldown(setAtkZCooldown()), _atkXcooldown(setAtkXCooldown()), _atkCcooldown(setAtkCCooldown()), _isMovingLeft(false), _isMovingRight(false), _hitCoolDown(setHitCooldown()),
-        _hitTimer(0.0f)
+    ICharacter(float x, float y)
+        : _rect(new Rect(x, y, CHARACTER_WIDTH, CHARACTER_HEIGHT))
     {
     }
 
@@ -120,28 +119,6 @@ public:
     {
         delete _rect;
     }
-    
-    virtual int setSpeed();
-
-    virtual int setWeight();
-
-    virtual int setJumpHeight();
-
-    virtual int setArmor();
-
-    virtual int setAtkZDamage();
-
-    virtual int setAtkXDamage();
-
-    virtual int setAtkCDamage();
-
-    virtual int setAtkZCooldown();
-
-    virtual int setAtkXCooldown();
-
-    virtual int setAtkCCooldown();
-
-    virtual int setHitCooldown();
 
 protected:
     Rect *getAttackZRect() const;

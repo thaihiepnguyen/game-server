@@ -14,8 +14,8 @@ void RoomService::_createRoom(const std::shared_ptr<TCPConnection> &player1, con
     int character2 = _resourceService->getRandomCharacterId();
     int background = _resourceService->getRandomBackgroundId();
 
-    std::shared_ptr<ICharacter> character1Ptr(_resourceService->createCharacter(character1, 100, 200, false));
-    std::shared_ptr<ICharacter> character2Ptr(_resourceService->createCharacter(character2, WINDOW_WIDTH - CHARACTER_WIDTH - 100, 200, true));
+    std::shared_ptr<ICharacter> character1Ptr(_resourceService->createCharacter(character1, 100, 200));
+    std::shared_ptr<ICharacter> character2Ptr(_resourceService->createCharacter(character2, WINDOW_WIDTH - CHARACTER_WIDTH - 100, 200));
 
     std::unordered_map<std::shared_ptr<TCPConnection>, std::shared_ptr<ICharacter>> players;
     

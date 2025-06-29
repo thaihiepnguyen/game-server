@@ -86,61 +86,6 @@ float ICharacter::getAttackDamage()
     return 0.0;
 }
 
-int ICharacter::setSpeed()
-{
-    return 200;
-}
-
-int ICharacter::setWeight()
-{
-    return 1;
-}
-
-int ICharacter::setJumpHeight()
-{
-    return 32;
-}
-
-int ICharacter::setArmor()
-{
-    return 3;
-}
-
-int ICharacter::setAtkZDamage()
-{
-    return 10;
-}
-
-int ICharacter::setAtkXDamage()
-{
-    return 15;
-}
-
-int ICharacter::setAtkCDamage()
-{
-    return 20;
-}
-
-int ICharacter::setAtkZCooldown()
-{
-    return 1000; // 1 second cooldown
-}
-
-int ICharacter::setAtkXCooldown()
-{
-    return 800; // 0.8 second cooldown
-}
-
-int ICharacter::setAtkCCooldown()
-{
-    return 1200; // 1.2 second cooldown
-}
-
-int ICharacter::setHitCooldown()
-{
-    return 500; // 0.5 second cooldown
-}
-
 Rect *ICharacter::getAttackZRect() const
 {
     return _getDefaultAttackRect();

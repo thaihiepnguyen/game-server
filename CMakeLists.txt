@@ -6,7 +6,7 @@ find_package(asio CONFIG REQUIRED)
 
 include_directories(include)
 
-file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp)
+file(GLOB SOURCES src/*.cpp src/**/*.cpp src/**/**/*.cpp src/**/**/**/*.cpp src/**/**/**/**/*.cpp)
 
 add_executable(mygame ${SOURCES})
 

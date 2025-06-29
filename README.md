@@ -47,5 +47,5 @@ docker run -p 8081:8081 <your-image-tag-name>
         ⇅
 [Service Layer]       // Business logic
         ⇅
-[Game World Layer]    // Game Simulator
+[Game World Layer]    // Game simulator
 ```

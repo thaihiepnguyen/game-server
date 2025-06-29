@@ -26,6 +26,6 @@ public:
 
     int getRandomBackgroundId();
 
-    ICharacter *createCharacter(int characterId, float x, float y, bool isFlipped);
+    ICharacter *createCharacter(int characterId, float x, float y);
     IEnvironment *createEnvironment(int backgroundId);
 };

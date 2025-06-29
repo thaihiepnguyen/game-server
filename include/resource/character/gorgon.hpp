@@ -5,33 +5,12 @@
 class Gorgon : public ICharacter
 {
 public:
-    Gorgon(float x, float y, bool isFlipped = false)
-        : ICharacter(x, y, isFlipped)
+    Gorgon(float x, float y)
+        : ICharacter(x, y)
     {
-    }
-
-    int setSpeed() override
-    {
-        return 300; // Gorgon has a higher speed
-    }
-
-    int setArmor() override
-    {
-        return 3; // Gorgon is nimble and has light armor
-    }
-
-    void jump(float groundY) override
-    {
-        return;
-    }
-
-    int setJumpHeight() override
-    {
-        return 0; // Gorgon has no jump height
-    }
-
-    int setAtkCDamage() override
-    {
-        return 25; // Gorgon's C attack deals more damage
+        _speed = 300;
+        _armor = 4;
+        _jumpHeight = 0;
+        _atkCdamage = 25;
     }
 };

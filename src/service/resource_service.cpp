@@ -18,7 +18,8 @@
 
 int ResourceService::getRandomCharacterId()
 {
-    return rand() % CHARACTER_LENGTH + 1;
+    return 4;
+    // return rand() % CHARACTER_LENGTH + 1;
 }
 
 int ResourceService::getRandomBackgroundId()
@@ -26,22 +27,22 @@ int ResourceService::getRandomBackgroundId()
     return rand() % BACKGROUND_LENGTH + 1;
 }
 
-ICharacter *ResourceService::createCharacter(int characterId, float x, float y, bool isFlipped)
+ICharacter *ResourceService::createCharacter(int characterId, float x, float y)
 {
     switch (characterId)
     {
     case CharacterId::ARCHER:
-        return new Archer(x, y, isFlipped);
+        return new Archer(x, y);
     case CharacterId::FIGHTER:
-        return new Fighter(x, y, isFlipped);
+        return new Fighter(x, y);
     case CharacterId::GORGON:
-        return new Gorgon(x, y, isFlipped);
+        return new Gorgon(x, y);
     case CharacterId::VAMPIRE:
-        return new Vampire(x, y, isFlipped);
+        return new Vampire(x, y);
     case CharacterId::WIZARD:
-        return new Wizard(x, y, isFlipped);
+        return new Wizard(x, y);
     case CharacterId::TENGU:
-        return new Tengu(x, y, isFlipped);
+        return new Tengu(x, y);
     default:
         throw std::invalid_argument("Invalid character ID");
     }
