@@ -244,8 +244,13 @@ void GameRoom::_updateInteractionBetween(std::shared_ptr<ICharacter> character, 
 {
     auto attackRect = character->getAttackRect();
 
-    if (attackRect != nullptr && attackRect->collidesWith(opponent->getRect()) && !opponent->getIsDefending())
+    if (attackRect != nullptr && attackRect->collidesWith(opponent->getRect()))
     {
+        // Only accept defense with first 100ms
+        if (opponent->getIsDefending() && (Time::getCurrentTimeMs() - opponent->getDefTimer() <= 100))
+        {
+            return;
+        }
         std::shared_ptr<Rect> intersection(attackRect->clip(opponent->getRect()));
         if (intersection != nullptr)
         {

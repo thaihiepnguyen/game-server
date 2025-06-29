@@ -18,8 +18,7 @@
 
 int ResourceService::getRandomCharacterId()
 {
-    return 4;
-    // return rand() % CHARACTER_LENGTH + 1;
+    return rand() % CHARACTER_LENGTH + 1;
 }
 
 int ResourceService::getRandomBackgroundId()

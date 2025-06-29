@@ -19,7 +19,6 @@ const unsigned short PORT = 8081;
 
 int main()
 {
-    // Create the fighting game application
     auto fightingApp = std::make_unique<FightingGameApplication>();
     fightingApp
         ->registerService(new InputService())
@@ -33,7 +32,7 @@ int main()
 
     std::cout
         << "Server is running on port " << PORT << "\n";
-    // Start the server
+
     fightingApp->start(PORT);
     return 0;
 }

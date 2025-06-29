@@ -33,6 +33,7 @@ protected:
     float _atkZtimer = 0.0f; // Timer for attack z cooldown
     float _atkXtimer = 0.0f; // Timer for attack x cooldown
     float _atkCtimer = 0.0f; // Timer for attack c cooldown
+    float _defTimer = 0.0f; // Timer for def cooldown
     float _hitTimer = 0.0f; // Timer for hit cooldown
 
     // flags
@@ -91,6 +92,7 @@ public:
     float getAtkCTimer() const { return _atkCtimer; }
     float getHitCoolDown() const { return _hitCoolDown; }
     float getHitTimer() const { return _hitTimer; }
+    float getDefTimer() const { return _defTimer; }
 
 
     // Setters

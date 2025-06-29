@@ -200,7 +200,7 @@ void ICharacter::defend()
     {
         return;
     }
-
+    _defTimer = Time::getCurrentTimeMs();
     _state = CharacterState::DEF;
 }
 
