@@ -310,15 +310,13 @@ private:
 
         if (attackRect != nullptr && attackRect->collidesWith(opponent->getRect()) && !opponent->getIsDefending())
         {
-            // std::shared_ptr<Rect> intersection(attackRect->clip(opponent->getRect()));
-            
-            // if (intersection != nullptr)
-            // {
-            //     float damgeRatio = intersection->getWidth() / opponent->getRect()->getWidth();
-            //     opponent->hit((int)damgeRatio);
-            // }
-            float damgeRatio = character->getAttackDamage();
-            opponent->hit((int)damgeRatio);
+            std::shared_ptr<Rect> intersection(attackRect->clip(opponent->getRect()));
+            if (intersection != nullptr)
+            {
+                float damgeRatio = character->getAttackDamage() * (intersection->getWidth() / opponent->getRect()->getWidth());
+                opponent->hit((int)damgeRatio);
+            }
+
         }
     }
 
