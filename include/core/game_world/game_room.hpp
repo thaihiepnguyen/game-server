@@ -3,9 +3,9 @@
 #include <memory>
 #include <vector>
 #include "core/network/tcp_connection.hpp"
-#include "core/resource/game_room/queued_packet.hpp"
-#include "core/resource/character/character.hpp"
-#include "core/resource/environment/environment.hpp"
+#include "core/game_world/queued_packet.hpp"
+#include "core/game_world/resource/character/character.hpp"
+#include "core/game_world/resource/environment/environment.hpp"
 #include "core/util/const.hpp"
 #include "protocol/broadcast_packet.hpp"
 #include "protocol/end_game_packet.hpp"

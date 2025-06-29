@@ -1,5 +1,5 @@
 #pragma once
-#include "core/resource/environment/environment.hpp"
+#include "core/game_world/resource/environment/environment.hpp"
 
 class Street : public IEnvironment
 {

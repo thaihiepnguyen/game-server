@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/resource/character/character.hpp"
+#include "core/game_world/resource/character/character.hpp"
 
 class Gorgon : public ICharacter
 {

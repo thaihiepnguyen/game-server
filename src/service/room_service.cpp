@@ -1,5 +1,5 @@
 #include "service/room_service.hpp"
-#include "core/resource/character/character.hpp"
+#include "core/game_world/resource/character/character.hpp"
 #include <unordered_map>
 #include "core/util/const.hpp"
 #include <thread>

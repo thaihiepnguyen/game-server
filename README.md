@@ -46,4 +46,6 @@ docker run -p 8081:8081 <your-image-tag-name>
 [Protocol Layer]      // Encode/decode message packets
         ⇅
 [Service Layer]       // Business logic
+        ⇅
+[Game World Layer]    // Game Simulator
 ```

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/resource/rectangle/rectangle.hpp"
+#include "core/game_world/resource/rectangle/rectangle.hpp"
 #include "core/util/const.hpp"
 #include "core/util/time.hpp"
 #include <cmath>

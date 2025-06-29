@@ -5,7 +5,7 @@
 #include "protocol/move_packet.hpp"
 #include "protocol/atk_packet.hpp"
 #include "protocol/def_packet.hpp"
-#include "core/resource/game_room/queued_packet.hpp"
+#include "core/game_world/queued_packet.hpp"
 #include "core/util/const.hpp"
 
 

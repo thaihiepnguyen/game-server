@@ -6,8 +6,8 @@
 #include <cstdlib>
 #include <ctime>
 #include "core/util/const.hpp"
-#include "core/resource/character/character.hpp"
-#include "core/resource/environment/environment.hpp"
+#include "core/game_world/resource/character/character.hpp"
+#include "core/game_world/resource/environment/environment.hpp"
 
 class ResourceService : public IService
 {

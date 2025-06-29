@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include "core/service/service.hpp"
 #include "core/network/tcp_connection.hpp"
-#include "core/resource/game_room/game_room.hpp"
+#include "core/game_world/game_room.hpp"
 #include "core/protocol/packet_header.hpp"
 #include "protocol/room_packet.hpp"
 #include "service/resource_service.hpp"

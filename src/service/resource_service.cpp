@@ -1,6 +1,6 @@
 #include "service/resource_service.hpp"
-#include "core/resource/character/character.hpp"
-#include "core/resource/environment/environment.hpp"
+#include "core/game_world/resource/character/character.hpp"
+#include "core/game_world/resource/environment/environment.hpp"
 #include "character/archer.hpp"
 #include "character/fighter.hpp"
 #include "character/gorgon.hpp"
