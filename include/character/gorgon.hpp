@@ -20,7 +20,7 @@ public:
         return 3; // Gorgon is nimble and has light armor
     }
 
-    void jump() override
+    void jump(float groundY) override
     {
         return;
     }

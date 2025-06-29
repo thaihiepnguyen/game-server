@@ -50,7 +50,8 @@ private:
 
     std::vector<int> _getStatesBlockingMovement() const
     {
-        return {
+        return 
+        {
             CharacterState::DEF,
             CharacterState::ATK_Z,
             CharacterState::ATK_X,
@@ -81,7 +82,7 @@ public:
     float getY() const { return _rect->getY(); }
     bool getIsMovingLeft() const { return _isMovingLeft; }
     bool getIsMovingRight() const { return _isMovingRight; }
-    bool getIsOnGround() const { return _velocityY == 0.0f; }
+    bool getIsOnGround(float groundY) const { return _rect->getBottom() == groundY; }
 
     float getAtkXCooldown() const { return _atkXcooldown; }
     float getAtkXTimer() const { return _atkXtimer; }
@@ -265,7 +266,7 @@ protected:
     }
 
 public:
-    virtual void jump()
+    virtual void jump(float groundY)
     {
         if (!getIsAlive())
         {
@@ -278,17 +279,17 @@ public:
             return; // Cannot jump if in a blocking state
         }
 
-        _state = CharacterState::JUMP;
-
-        if (getIsOnGround())
+        if (getIsOnGround(groundY))
         {
+            _state = CharacterState::JUMP;
             _velocityY = -_jumpHeight;
         }
     }
 
     void lookAt(ICharacter *other)
     {
-        if (!getIsAlive()) {
+        if (!getIsAlive()) 
+        {
             return;    
         }
         
@@ -297,7 +298,8 @@ public:
 
     void stopMovement()
     {
-        if (!getIsAlive()) {
+        if (!getIsAlive()) 
+        {
             return;    
         }
 

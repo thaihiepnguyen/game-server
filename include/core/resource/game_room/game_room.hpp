@@ -29,9 +29,11 @@ private:
     player_pool _players;
     bool _gameRunning = true;
     std::shared_ptr<IEnvironment> _environment;
-    const float TICK_DURATION = 0.02f; // 20ms per tick
+    const float _tick = TICK_DURATION; // 20ms per tick
     std::queue<QueuedPacket> _packetQueue;
     float _groundY;
+    int _gameTimer = 90;
+    float _lastTime = 0.0f;
 
 public:
     GameRoom(player_pool players, std::shared_ptr<IEnvironment> environment)
@@ -70,8 +72,8 @@ private:
     {
         while (_gameRunning)
         {
-            _update(TICK_DURATION);
-            std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(TICK_DURATION * 1000)));
+            _update(_tick);
+            std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(_tick * 1000)));
         }
     }
 
@@ -80,8 +82,8 @@ private:
         // process queued packets
         _processQueuedPackets(dt);
         
-        // update physics
-        _updatePhysics(dt);
+        // update battle
+        _updateBattle(dt);
 
         // update character states
         _updateCharacterStates(dt);
@@ -132,7 +134,7 @@ private:
                 break;
 
             case QueuedPacketType::PAC_JUMP:
-                character->jump();
+                character->jump(_groundY);
                 break;
 
             case QueuedPacketType::DEFEND:
@@ -160,7 +162,7 @@ private:
         }
     }
 
-    void _updatePhysics(float dt)
+    void _updateBattle(float dt)
     {
         for (auto &player : _players)
         {
@@ -178,6 +180,12 @@ private:
                 rect->setBottom(_groundY);
                 character->setVelocityY(0.0f);
             }
+        }
+
+        if (Time::getCurrentTimeMs() - _lastTime >= 1000)
+        {
+            _gameTimer -= 1;
+            _lastTime = Time::getCurrentTimeMs();
         }
     }
 
@@ -235,7 +243,7 @@ private:
 
             if (currentState == CharacterState::JUMP)
             {
-                if (character->getIsOnGround())
+                if (character->getIsOnGround(_groundY))
                 {
                     character->setState(CharacterState::IDLE);
                 }
@@ -330,6 +338,52 @@ private:
             // TODO: handle error
             return true;
         }
+
+        if (_gameTimer == 0)
+        {
+            if (characters[0]->getHp() == characters[1]->getHp())
+            {
+                EndGamePacket packet;
+                packet.commandId = CommandId::C_END_GAME;
+                packet.length = sizeof(EndGameDataPacket);
+
+                packet.result = 3;
+                
+                for (const auto &conn : connections)
+                {
+                    conn->send(packet.toBuffer(), sizeof(EndGamePacket));
+                }
+
+                return true;
+            }
+            else if (characters[0]->getHp() > characters[1]->getHp())
+            {
+                EndGamePacket packet;
+                packet.commandId = CommandId::C_END_GAME;
+                packet.length = sizeof(EndGameDataPacket);
+
+                packet.result = 1; // win
+                connections[0]->send(packet.toBuffer(), sizeof(EndGamePacket));
+                packet.result = 2; // lost
+                connections[1]->send(packet.toBuffer(), sizeof(EndGamePacket));
+
+                return true;
+            }
+            else
+            {
+                EndGamePacket packet;
+                packet.commandId = CommandId::C_END_GAME;
+                packet.length = sizeof(EndGameDataPacket);
+
+                packet.result = 1; // win
+                connections[1]->send(packet.toBuffer(), sizeof(EndGamePacket));
+                packet.result = 2; // lost
+                connections[0]->send(packet.toBuffer(), sizeof(EndGamePacket));
+
+                return true;
+            }
+        }
+
 
         // The match drew!
         if (!characters[0]->getIsAlive() && !characters[1]->getIsAlive())

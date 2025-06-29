@@ -43,6 +43,7 @@ const int WINDOW_WIDTH = 1000;
 const int WINDOW_HEIGHT = 600;
 
 const float GRAVITY = 2.0f; // Gravity acceleration
+const float TICK_DURATION = 0.02f;
 
 enum CharacterState
 {
