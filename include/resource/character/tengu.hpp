@@ -10,7 +10,7 @@ public:
     {
         _speed = 230;
         _armor = 4;
-        _jumpHeight = 42;
+        _jumpHeight = 38;
         _atkCdamage = 25;
     }
 };

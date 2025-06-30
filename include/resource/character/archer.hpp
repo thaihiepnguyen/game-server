@@ -37,7 +37,7 @@ public:
             float width = 160;
             float height = 30;
             float x = _isFlipped ? (_rect->getX() - width) : _rect->getRight();
-            float y = _rect->getCenterY() - (height / 2);
+            float y = _rect->getCenterY() - (height);
 
             IProjectile *projectile = new ArrowProjectile(x, y, width, height, _isFlipped);
             _projectiles.push_back(projectile);
