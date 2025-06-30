@@ -8,7 +8,6 @@
 #include "core/game_world/queued_packet.hpp"
 #include "core/util/const.hpp"
 
-
 class InputService : public IService
 {
 private:
@@ -18,11 +17,13 @@ private:
     {
         _roomService = provider->getService<RoomService>();
     }
+
 public:
-    void move(const std::shared_ptr<TCPConnection> &connection, const MoveDataPacket& packet)
+    void move(const std::shared_ptr<TCPConnection> &connection, const MoveDataPacket &packet)
     {
         auto gameRoom = _roomService->getGameRoomByConnection(connection);
-        if (!gameRoom) {
+        if (!gameRoom)
+        {
             // TODO: handle error
             return;
         }
@@ -47,10 +48,11 @@ public:
         }
     }
 
-    void atk(const std::shared_ptr<TCPConnection> &connection, const AtkDataPacket& packet)
+    void atk(const std::shared_ptr<TCPConnection> &connection, const AtkDataPacket &packet)
     {
         auto gameRoom = _roomService->getGameRoomByConnection(connection);
-        if (!gameRoom) {
+        if (!gameRoom)
+        {
             // TODO: handle error
             return;
         }
@@ -78,7 +80,8 @@ public:
     void jump(const std::shared_ptr<TCPConnection> &connection)
     {
         auto gameRoom = _roomService->getGameRoomByConnection(connection);
-        if (!gameRoom) {
+        if (!gameRoom)
+        {
             // TODO: handle error
             return;
         }
@@ -89,10 +92,11 @@ public:
         gameRoom->enqueuePacket(queuePacket);
     }
 
-    void def(const std::shared_ptr<TCPConnection> &connection, const DefDataPacket& packet)
+    void def(const std::shared_ptr<TCPConnection> &connection, const DefDataPacket &packet)
     {
         auto gameRoom = _roomService->getGameRoomByConnection(connection);
-        if (!gameRoom) {
+        if (!gameRoom)
+        {
             // TODO: handle error
             return;
         }

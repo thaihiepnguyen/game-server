@@ -1,12 +1,12 @@
 #include "core/game_world/resource/character/character.hpp"
 
-void ICharacter::setIsMovingLeft(bool value) 
+void ICharacter::setIsMovingLeft(bool value)
 {
     if (value == true)
     {
         _isMovingLeft = true;
         _isMovingRight = false;
-    } 
+    }
     else
     {
         _isMovingLeft = false;
@@ -123,19 +123,19 @@ void ICharacter::jump(float groundY)
 
 void ICharacter::lookAt(ICharacter *other)
 {
-    if (!getIsAlive()) 
+    if (!getIsAlive())
     {
-        return;    
+        return;
     }
-    
+
     _isFlipped = (_rect->getCenterX() > other->getRect()->getCenterX());
 }
 
 void ICharacter::stopMovement()
 {
-    if (!getIsAlive()) 
+    if (!getIsAlive())
     {
-        return;    
+        return;
     }
 
     setIsMovingLeft(false);
@@ -220,7 +220,13 @@ void ICharacter::hit(int damage, int knockback)
     {
         return;
     }
-    
+
+    // Check if the character is defending
+    if (getIsDefending() && (Time::getCurrentTimeMs() - getDefTimer() <= 100))
+    {
+        return;
+    }
+
     // Apply armor reduction
     int effectiveDamage = std::max(0, damage - _armor);
     _hp -= effectiveDamage;

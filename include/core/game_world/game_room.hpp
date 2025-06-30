@@ -22,7 +22,7 @@ class GameRoom // GameWorld
 public:
     static std::condition_variable cv;
     static std::mutex cv_mtx;
-    
+
 private:
     std::mutex _mtx;
     std::thread _t;
@@ -38,9 +38,10 @@ private:
 
 public:
     GameRoom(player_pool players, std::shared_ptr<IEnvironment> environment)
-        : _players(std::move(players)), _environment(environment) {
+        : _players(std::move(players)), _environment(environment)
+    {
         _groundY = _environment->getGroundYRatio() * WINDOW_HEIGHT;
-        }
+    }
 
     std::vector<std::shared_ptr<TCPConnection>> getConnections() const
     {
@@ -51,7 +52,7 @@ public:
         }
         return connections;
     }
-    
+
     void start()
     {
         _t = std::thread(&GameRoom::_startGameLoop, this);

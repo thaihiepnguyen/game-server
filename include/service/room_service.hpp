@@ -38,6 +38,7 @@ private:
     {
         _resourceService = provider->getService<ResourceService>();
     }
+
 public:
     RoomService()
     {

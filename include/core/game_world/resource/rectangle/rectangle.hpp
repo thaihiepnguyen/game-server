@@ -12,6 +12,8 @@ private:
     float _height;
 
 public:
+    Rect() : _x(0), _y(0), _width(0), _height(0) {}
+
     Rect(float x, float y, float width, float height)
         : _x(x), _y(y), _width(width), _height(height) {}
 
@@ -31,7 +33,7 @@ public:
     void setWidth(float width) { _width = width; }
     void setHeight(float height) { _height = height; }
 
-    bool collidesWith(const Rect* other) const;
+    bool collidesWith(const Rect *other) const;
 
-    Rect* clip(const Rect* other) const;
+    Rect *clip(const Rect *other) const;
 };

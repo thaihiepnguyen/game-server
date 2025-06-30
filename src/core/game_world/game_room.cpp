@@ -1,8 +1,9 @@
 #include "core/game_world/game_room.hpp"
+#include "resource/character/skill/shoot/shootable.hpp"
+#include "resource/character/archer.hpp"
 
 std::condition_variable GameRoom::cv;
 std::mutex GameRoom::cv_mtx;
-
 
 void GameRoom::_startGameLoop()
 {
@@ -17,7 +18,7 @@ void GameRoom::_update(float dt)
 {
     // process queued packets
     _processQueuedPackets(dt);
-    
+
     // update battle
     _updateBattle(dt);
 
@@ -26,7 +27,7 @@ void GameRoom::_update(float dt)
 
     // update collisions
     _updateCollisions();
-    
+
     // broadcast
     _broadcastUpdate();
 
@@ -106,7 +107,7 @@ void GameRoom::_updateBattle(float dt)
 
         float dy = character->getVelocityY() + GRAVITY * 50 * dt;
         character->setVelocityY(dy);
-        
+
         character->setY(character->getY() + dy);
 
         auto rect = character->getRect();
@@ -115,6 +116,12 @@ void GameRoom::_updateBattle(float dt)
         {
             rect->setBottom(_groundY);
             character->setVelocityY(0.0f);
+        }
+
+        Shootable *shootableCharacter = dynamic_cast<Shootable *>(character.get());
+        if (shootableCharacter != nullptr)
+        {
+            shootableCharacter->updateProjectiles(dt);
         }
     }
 
@@ -150,6 +157,11 @@ void GameRoom::_updateCharacterStates(float dt)
             if (Time::getCurrentTimeMs() - character->getAtkCTimer() >= character->getAtkCCooldown())
             {
                 character->setState(CharacterState::IDLE);
+                Archer *archer = dynamic_cast<Archer *>(character.get());
+                if (archer != nullptr)
+                {
+                    archer->shoot();
+                }
             }
         }
 
@@ -195,7 +207,7 @@ void GameRoom::_updateCollisions()
         // TODO: handle error
         return;
     }
-    
+
     _updateInteractionBetween(characters[0], characters[1]);
     _updateInteractionBetween(characters[1], characters[0]);
 }
@@ -246,18 +258,26 @@ void GameRoom::_updateInteractionBetween(std::shared_ptr<ICharacter> character, 
 
     if (attackRect != nullptr && attackRect->collidesWith(opponent->getRect()))
     {
-        // Only accept defense with first 100ms
-        if (opponent->getIsDefending() && (Time::getCurrentTimeMs() - opponent->getDefTimer() <= 100))
-        {
-            return;
-        }
         std::shared_ptr<Rect> intersection(attackRect->clip(opponent->getRect()));
         if (intersection != nullptr)
         {
-            float damgeRatio = character->getAttackDamage() * (intersection->getWidth() / opponent->getRect()->getWidth());
-            opponent->hit((int)damgeRatio);
+            float damageRatio = character->getAttackDamage() * (intersection->getWidth() / opponent->getRect()->getWidth());
+            opponent->hit((int)damageRatio);
         }
+    }
 
+    Shootable *shootableCharacter = dynamic_cast<Shootable *>(character.get());
+    if (shootableCharacter != nullptr)
+    {
+        auto &projectiles = shootableCharacter->getProjectiles();
+        for (auto &projectile : projectiles)
+        {
+            auto rect = projectile->getRect();
+            if (rect.collidesWith(opponent->getRect()))
+            {
+                opponent->hit(character->getAttackCDamage());
+            }
+        }
     }
 }
 
@@ -287,7 +307,7 @@ bool GameRoom::_isEndGame()
             packet.length = sizeof(EndGameDataPacket);
 
             packet.result = 3;
-            
+
             for (const auto &conn : connections)
             {
                 conn->send(packet.toBuffer(), sizeof(EndGamePacket));
@@ -323,7 +343,6 @@ bool GameRoom::_isEndGame()
         }
     }
 
-
     // The match drew!
     if (!characters[0]->getIsAlive() && !characters[1]->getIsAlive())
     {
@@ -332,7 +351,7 @@ bool GameRoom::_isEndGame()
         packet.length = sizeof(EndGameDataPacket);
 
         packet.result = 3;
-        
+
         for (const auto &conn : connections)
         {
             conn->send(packet.toBuffer(), sizeof(EndGamePacket));
@@ -377,7 +396,8 @@ bool GameRoom::_isEndGame()
 std::shared_ptr<ICharacter> GameRoom::_getCharacterByConnection(std::shared_ptr<TCPConnection> conn)
 {
     auto it = _players.find(conn);
-    if (it != _players.end()) {
+    if (it != _players.end())
+    {
         return it->second;
     }
     return nullptr;
