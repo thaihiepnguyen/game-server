@@ -112,7 +112,7 @@ public:
 
     void attackX();
 
-    void attackC();
+    virtual void attackC();
 
     Rect *getAttackRect() const;
 

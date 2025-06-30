@@ -7,6 +7,8 @@
 
 class Archer : public ICharacter, public Shootable
 {
+private:
+    bool _atkCCooldownReady = false;
 protected:
     Rect *getAttackCRect() const override
     {
@@ -23,14 +25,27 @@ public:
         _atkCdamage = 25;
     }
 
-    void shoot() override
+    void attackC() override 
     {
-        float width = 160;
-        float height = 30;
-        float x = _isFlipped ? (_rect->getX() - width) : _rect->getRight();
-        float y = _rect->getCenterY() - (height / 2);
+        ICharacter::attackC();
+        _atkCCooldownReady = true;
+    }
 
-        IProjectile *projectile = new ArrowProjectile(x, y, width, height, _isFlipped);
-        _projectiles.push_back(projectile);
+    IProjectile* shoot() override
+    {
+        if (_atkCCooldownReady == true) {
+            float width = 160;
+            float height = 30;
+            float x = _isFlipped ? (_rect->getX() - width) : _rect->getRight();
+            float y = _rect->getCenterY() - (height / 2);
+
+            IProjectile *projectile = new ArrowProjectile(x, y, width, height, _isFlipped);
+            _projectiles.push_back(projectile);
+
+            _atkCCooldownReady = false;
+            return projectile;
+        }
+
+        return nullptr;
     }
 };

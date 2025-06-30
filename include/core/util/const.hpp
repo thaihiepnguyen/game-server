@@ -5,13 +5,17 @@
 
 enum CommandId
 {
+    // receive
     C_WAIT_FOR_MATCH = 1,
     C_BROADCAST = 2,
     C_MOVE = 3,
     C_DEF = 4,
     C_JUMP = 5,
     C_ATK = 6,
+
+    // send
     C_END_GAME = 7,
+    C_ARROW = 8
 };
 
 enum CharacterId

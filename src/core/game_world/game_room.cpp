@@ -1,6 +1,7 @@
 #include "core/game_world/game_room.hpp"
 #include "resource/character/skill/shoot/shootable.hpp"
 #include "resource/character/archer.hpp"
+#include "protocol/arrow_packet.hpp"
 
 std::condition_variable GameRoom::cv;
 std::mutex GameRoom::cv_mtx;
@@ -140,6 +141,7 @@ void GameRoom::_updateCharacterStates(float dt)
     for (auto &player : _players)
     {
         auto character = player.second;
+        auto connection = player.first;
         int currentState = character->getState();
 
         if (character->getIsMovingLeft())
@@ -160,7 +162,28 @@ void GameRoom::_updateCharacterStates(float dt)
                 Archer *archer = dynamic_cast<Archer *>(character.get());
                 if (archer != nullptr)
                 {
-                    archer->shoot();
+                    auto arrow = archer->shoot();
+                    if (arrow) {
+                        ArrowPacket packet;
+                        packet.commandId = CommandId::C_ARROW;
+                        packet.length = sizeof(ArrowDataPacket);
+
+                        packet.owner = 1;
+                        packet.x = arrow->getRect().getX();
+                        packet.y = arrow->getRect().getY();
+                        packet.direction = arrow->getIsFlipped() ? 0 : 1;
+
+                        connection->send(packet.toBuffer(), sizeof(ArrowPacket));
+                        packet.owner = 0;
+                        
+                        for (auto& player : _players)
+                        {
+                            if (player.first != connection)
+                            {
+                                player.first->send(packet.toBuffer(), sizeof(ArrowPacket));
+                            }
+                        }
+                    }
                 }
             }
         }

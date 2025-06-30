@@ -22,7 +22,7 @@ public:
         }
     }
 
-    virtual void shoot() = 0;
+    virtual IProjectile* shoot() = 0;
 
     const std::vector<IProjectile *> &getProjectiles() const
     {
