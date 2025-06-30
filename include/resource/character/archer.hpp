@@ -9,7 +9,7 @@ class Archer : public ICharacter, public Shootable
 {
 private:
     bool _atkCCooldownReady = false;
-protected:
+
     Rect *getAttackCRect() const override
     {
         return nullptr;
@@ -23,6 +23,9 @@ public:
         _armor = 2;
         _jumpHeight = 34;
         _atkCdamage = 25;
+        _atkZcooldown = 500;
+        _atkXcooldown = 250;
+        _atkCcooldown = 1000;
     }
 
     void attackC() override 

@@ -11,5 +11,8 @@ public:
         _speed = 300;
         _jumpHeight = 34;
         _atkCdamage = 25;
+        _atkZcooldown = 600;
+        _atkXcooldown = 300;
+        _atkCcooldown = 400;
     }
 };

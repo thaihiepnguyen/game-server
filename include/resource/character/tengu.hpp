@@ -12,5 +12,8 @@ public:
         _armor = 4;
         _jumpHeight = 38;
         _atkCdamage = 25;
+        _atkZcooldown = 150;
+        _atkXcooldown = 300;
+        _atkCcooldown = 600;
     }
 };
