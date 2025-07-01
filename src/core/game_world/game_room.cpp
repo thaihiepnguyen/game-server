@@ -163,7 +163,8 @@ void GameRoom::_updateCharacterStates(float dt)
                 if (archer != nullptr)
                 {
                     auto arrow = archer->shoot();
-                    if (arrow) {
+                    if (arrow)
+                    {
                         ArrowPacket packet;
                         packet.commandId = CommandId::C_ARROW;
                         packet.length = sizeof(ArrowDataPacket);
@@ -175,8 +176,8 @@ void GameRoom::_updateCharacterStates(float dt)
 
                         connection->send(packet.toBuffer(), sizeof(ArrowPacket));
                         packet.owner = 0;
-                        
-                        for (auto& player : _players)
+
+                        for (auto &player : _players)
                         {
                             if (player.first != connection)
                             {

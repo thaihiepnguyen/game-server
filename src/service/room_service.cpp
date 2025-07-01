@@ -2,6 +2,7 @@
 #include "core/game_world/resource/character/character.hpp"
 #include <unordered_map>
 #include "core/util/const.hpp"
+#include "protocol/opponent_out_packet.hpp"
 #include <thread>
 
 void RoomService::_createRoom(const std::shared_ptr<TCPConnection> &player1, const std::shared_ptr<TCPConnection> &player2)
@@ -9,7 +10,7 @@ void RoomService::_createRoom(const std::shared_ptr<TCPConnection> &player1, con
     // Create a new room with the given connections
     long long roomId = ++_nextRoomId;
 
-    // Assign random characters and backgrounds to both players
+    // Assign random characters and environments to both players
     int character1 = _resourceService->getRandomCharacterId();
     int character2 = _resourceService->getRandomCharacterId();
     int background = _resourceService->getRandomBackgroundId();
@@ -18,7 +19,7 @@ void RoomService::_createRoom(const std::shared_ptr<TCPConnection> &player1, con
     std::shared_ptr<ICharacter> character2Ptr(_resourceService->createCharacter(character2, WINDOW_WIDTH - CHARACTER_WIDTH - 100, 200));
 
     std::unordered_map<std::shared_ptr<TCPConnection>, std::shared_ptr<ICharacter>> players;
-    
+
     players[player1] = character1Ptr;
     players[player2] = character2Ptr;
 
@@ -26,20 +27,32 @@ void RoomService::_createRoom(const std::shared_ptr<TCPConnection> &player1, con
     std::shared_ptr<IEnvironment> environment(_resourceService->createEnvironment(background));
 
     _rooms[roomId] = std::make_shared<GameRoom>(players, environment);
-    _rooms[roomId]->start();
 
     for (const auto &player : players)
     {
-        player.first->events.subscribe("disconnect", [this, conn = player.first, roomId]()
-                                    {
-                                        // TODO: consider to notify another of disconnect. 
-                                        _rooms.erase(roomId); 
-                                    });
+        auto conn = player.first;
+        conn->events.subscribe("disconnect", [this, &conn, roomId, players]()
+                               {
+                                        for (const auto& opponent : players)
+                                        {
+                                            if (!opponent.first->isClosed() && opponent.first != conn)
+                                            {
+                                                OpponentOutPacket packet;
+                                                packet.commandId = CommandId::C_OPPONENT_OUT;
+                                                packet.length = sizeof(0);
+                                                opponent.first->send(packet.toBuffer(), sizeof(OpponentOutPacket));
+                                            }
+                                        }
+
+                                        _rooms.erase(roomId); });
     }
 
     // Notify both players about the room creation
     _notifyRoomCreated(player1, character1, character2, background, "left");
     _notifyRoomCreated(player2, character2, character1, background, "right");
+
+    // Start game loop
+    _rooms[roomId]->start();
 }
 
 void RoomService::_notifyRoomCreated(
@@ -59,7 +72,7 @@ void RoomService::_notifyRoomCreated(
     connection->send(packet.toBuffer(), sizeof(RoomPacket));
 }
 
-void RoomService::_removeConnection(const std::shared_ptr<TCPConnection> &connection)
+void RoomService::_removeConnectionFromWaiting(const std::shared_ptr<TCPConnection> &connection)
 {
     auto it = std::find_if(_connections.begin(), _connections.end(),
                            [&connection](const std::shared_ptr<TCPConnection> &conn)
@@ -79,13 +92,13 @@ void RoomService::waitForRoom(const std::shared_ptr<TCPConnection> &connection)
         // If no room is available, create a new one
         _connections.push_back(connection);
         connection->events.subscribe("disconnect", [this, &connection]()
-                                     { _removeConnection(connection); });
+                                     { _removeConnectionFromWaiting(connection); });
     }
     else
     {
         // If a room is available, join it
         auto opponent = _connections.back();
-        _removeConnection(opponent);
+        _removeConnectionFromWaiting(opponent);
         _createRoom(connection, opponent);
     }
 }
@@ -97,10 +110,10 @@ long long RoomService::getRoomIdByConnection(const std::shared_ptr<TCPConnection
         const auto &players = room.second->getConnections();
         if (std::find(players.begin(), players.end(), connection) != players.end())
         {
-            return room.first; // Return the room ID if the connection is found
+            return room.first;
         }
     }
-    return -1; // Return -1 if the connection is not found in any room
+    return -1;
 }
 
 std::shared_ptr<TCPConnection> RoomService::getOpponentConnection(const std::shared_ptr<TCPConnection> &connection) const
@@ -108,30 +121,30 @@ std::shared_ptr<TCPConnection> RoomService::getOpponentConnection(const std::sha
     long long roomId = getRoomIdByConnection(connection);
     if (roomId == -1)
     {
-        return nullptr; // Connection not found in any room
+        return nullptr;
     }
 
     const auto &players = _rooms.at(roomId)->getConnections();
     for (const auto &player : players)
     {
-        if (player != connection) // Check if the player is not the same as the connection
+        if (player != connection)
         {
-            return player; // Return the opponent connection
+            return player;
         }
     }
-    return nullptr; // No opponent found
+    return nullptr;
 }
 
 std::shared_ptr<GameRoom> RoomService::getGameRoomByConnection(const std::shared_ptr<TCPConnection> &connection) const
 {
     long long roomId = getRoomIdByConnection(connection);
     auto it = _rooms.find(roomId);
-    if (it != _rooms.end()) {
+    if (it != _rooms.end())
+    {
         return it->second;
     }
     return nullptr;
 }
-
 
 void RoomService::_cleanRoom()
 {
@@ -140,7 +153,7 @@ void RoomService::_cleanRoom()
         std::unique_lock<std::mutex> locker(GameRoom::cv_mtx);
         GameRoom::cv.wait(locker);
 
-        for (auto it = _rooms.begin(); it != _rooms.end(); )
+        for (auto it = _rooms.begin(); it != _rooms.end();)
         {
             if (!it->second->isGameRunning())
             {

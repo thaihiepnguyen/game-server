@@ -30,7 +30,7 @@ private:
         const int &background,
         const std::string &side);
 
-    void _removeConnection(const std::shared_ptr<TCPConnection> &connection);
+    void _removeConnectionFromWaiting(const std::shared_ptr<TCPConnection> &connection);
 
     void _cleanRoom();
 

@@ -53,3 +53,8 @@ void TCPConnection::disconnect()
     this->events.notify("disconnect");
     this->socket().close();
 }
+
+bool TCPConnection::isClosed()
+{
+    return !this->socket().is_open();
+}

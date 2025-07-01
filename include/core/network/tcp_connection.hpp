@@ -39,4 +39,6 @@ public:
      * Disconnects the TCP connection.
      */
     void disconnect();
+
+    bool isClosed();
 };

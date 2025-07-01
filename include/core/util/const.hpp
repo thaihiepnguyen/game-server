@@ -5,8 +5,10 @@
 
 enum CommandId
 {
-    // receive
+    // receive and send
     C_WAIT_FOR_MATCH = 1,
+
+    // receive
     C_BROADCAST = 2,
     C_MOVE = 3,
     C_DEF = 4,
@@ -15,7 +17,8 @@ enum CommandId
 
     // send
     C_END_GAME = 7,
-    C_ARROW = 8
+    C_ARROW = 8,
+    C_OPPONENT_OUT = 9,
 };
 
 enum CharacterId
@@ -62,7 +65,8 @@ enum CharacterState
     DEATH = 8
 };
 
-enum QueuedPacketType {
+enum QueuedPacketType
+{
     MOVE_LEFT = 1,
     MOVE_RIGHT = 2,
     STOP_MOVE = 3,
