@@ -54,13 +54,17 @@ void TCPServer::accept(std::function<void(std::shared_ptr<TCPConnection>, const 
             if (!error)
             {
                 _connections.push_back(connection);
+                std::weak_ptr<TCPConnection> weakConn = connection;
                 connection->events.subscribe("disconnect",
-                                             [this, connection]()
+                                             [this, weakConn]()
                                              {
-                                                 auto it = std::remove(_connections.begin(), _connections.end(), connection);
-                                                 if (it != _connections.end())
+                                                 if (auto conn = weakConn.lock())
                                                  {
-                                                     _connections.erase(it);
+                                                     auto it = std::remove(_connections.begin(), _connections.end(), conn);
+                                                     if (it != _connections.end())
+                                                     {
+                                                         _connections.erase(it);
+                                                     }
                                                  }
                                              });
                 connection->recv([connection, handler](const char *data, std::size_t length)

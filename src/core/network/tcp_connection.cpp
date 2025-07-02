@@ -10,6 +10,11 @@ TCPConnection::TCPConnection(asio::io_context &ioContext) : _socket(ioContext)
 
 void TCPConnection::recv(std::function<void(const char *, std::size_t)> handler)
 {
+    if (this->isClosed())
+    {
+        std::cerr << "Error: Cannot receive data, socket is closed.\n";
+        return;
+    }
     auto buffer = std::make_shared<std::array<char, 1024>>();
     this->_socket.async_read_some(
         asio::buffer(*buffer),
@@ -35,6 +40,12 @@ void TCPConnection::send(const char *buffer, std::size_t length)
         return;
     }
 
+    if (this->isClosed())
+    {
+        std::cerr << "Error: Cannot send data, socket is closed.\n";
+        return;
+    }
+
     asio::async_write(
         this->socket(),
         asio::buffer(buffer, length),
@@ -50,8 +61,8 @@ void TCPConnection::send(const char *buffer, std::size_t length)
 
 void TCPConnection::disconnect()
 {
-    this->events.notify("disconnect");
     this->socket().close();
+    this->events.notify("disconnect");
 }
 
 bool TCPConnection::isClosed()

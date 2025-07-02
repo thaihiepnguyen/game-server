@@ -1,20 +1,15 @@
 #pragma once
 
 #include "core/game_world/resource/character/character.hpp"
+#include "resource/character/skill/shoot/shootable.hpp"
+#include "resource/character/skill/shoot/fire_projectile.hpp"
 
-class Wizard : public ICharacter
+class Wizard : public ICharacter, public Shootable
 {
+protected:
+    Rect *getAttackCRect() const override;
+
 public:
-    Wizard(float x, float y)
-        : ICharacter(x, y)
-    {
-        _speed = 240;
-        _armor = 2;
-        _jumpHeight = 38;
-        _atkCdamage = 25;
-        _atkZdamage = 15;
-        _atkZcooldown = 350;
-        _atkXcooldown = 450;
-        _atkCcooldown = 1600;
-    }
+    Wizard(float x, float y);
+    IProjectile *shoot() override;
 };

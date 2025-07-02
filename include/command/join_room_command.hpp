@@ -15,8 +15,5 @@ public:
         _roomService = provider->getService<RoomService>();
     }
 
-    void execute(const std::shared_ptr<TCPConnection> &connection, const char *data, std::size_t length) override
-    {
-        _roomService->waitForRoom(connection);
-    }
+    void execute(const std::shared_ptr<TCPConnection> &connection, const char *data, std::size_t length) override;
 };

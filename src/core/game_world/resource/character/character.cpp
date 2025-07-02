@@ -221,14 +221,19 @@ void ICharacter::hit(int damage, int knockback)
         return;
     }
 
-    // Check if the character is defending
-    if (getIsDefending() && (Time::getCurrentTimeMs() - getDefTimer() <= 100))
-    {
-        return;
-    }
-
     // Apply armor reduction
     int effectiveDamage = std::max(0, damage - _armor);
+
+    // Check if the character is defending
+    if (getIsDefending())
+    {
+        if (Time::getCurrentTimeMs() - getDefTimer() < 200)
+        {
+            return; // Ignore hit if within hit cooldown
+        }
+        effectiveDamage = static_cast<int>(effectiveDamage * 0.5f);
+    }
+
     _hp -= effectiveDamage;
 
     if (_hp <= 0)

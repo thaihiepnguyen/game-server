@@ -19,6 +19,7 @@ enum CommandId
     C_END_GAME = 7,
     C_ARROW = 8,
     C_OPPONENT_OUT = 9,
+    C_FIRE = 10
 };
 
 enum CharacterId

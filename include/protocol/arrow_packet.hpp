@@ -5,7 +5,7 @@
 #pragma pack(push, 1)
 struct ArrowDataPacket
 {
-    int8_t owner; // 1 for owner, 0 is not 
+    int8_t owner; // 1 for owner, 0 is not
     int32_t x;
     int32_t y;
     int8_t direction; // 0 for left, 1 for right

@@ -10,7 +10,7 @@ FightingGameApplication::FightingGameApplication()
 
 void FightingGameApplication::_buildRelationship()
 {
-    for (auto &command : _commands) 
+    for (auto &command : _commands)
     {
         command.second->inject(_provider);
     }

@@ -1,18 +1,12 @@
 #pragma once
 
 #include "core/game_world/resource/character/character.hpp"
+#include "resource/character/skill/kick_away/kickable.hpp"
 
-class Fighter : public ICharacter
+class Fighter : public ICharacter, public Kickable
 {
 public:
-    Fighter(float x, float y)
-        : ICharacter(x, y)
-    {
-        _speed = 300;
-        _jumpHeight = 34;
-        _atkCdamage = 25;
-        _atkZcooldown = 600;
-        _atkXcooldown = 300;
-        _atkCcooldown = 400;
-    }
+    Fighter(float x, float y);
+
+    float kickAway() override;
 };

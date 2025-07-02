@@ -11,59 +11,14 @@ protected:
     std::vector<IProjectile *> _projectiles;
 
 public:
-    virtual ~Shootable()
-    {
-        for (auto &projectile : _projectiles)
-        {
-            if (projectile)
-            {
-                delete projectile;
-            }
-        }
-    }
+    virtual ~Shootable();
 
-    virtual IProjectile* shoot() = 0;
+    virtual IProjectile *shoot() = 0;
 
-    const std::vector<IProjectile *> &getProjectiles() const
-    {
-        return _projectiles;
-    }
+    const std::vector<IProjectile *> &getProjectiles() const;
 
-    void updateProjectiles(float dt)
-    {
-        for (auto &projectile : _projectiles)
-        {
-            if (projectile)
-            {
-                Rect &rect = projectile->getRect();
-                if (projectile->getIsFlipped())
-                {
-                    rect.setX(rect.getX() - projectile->getSpeed() * dt);
-                }
-                else
-                {
-                    rect.setX(rect.getX() + projectile->getSpeed() * dt);
-                }
-
-                // Check if the projectile is out of bounds
-                if (rect.getX() < 0 || rect.getX() > WINDOW_WIDTH)
-                {
-                    _removeProjectile(projectile);
-                }
-            }
-        }
-    }
+    void updateProjectiles(float dt);
 
 private:
-    void _removeProjectile(IProjectile *projectile)
-    {
-        if (projectile)
-            delete projectile;
-
-        auto it = std::remove(_projectiles.begin(), _projectiles.end(), projectile);
-        if (it != _projectiles.end())
-        {
-            _projectiles.erase(it, _projectiles.end());
-        }
-    }
+    void _removeProjectile(IProjectile *projectile);
 };

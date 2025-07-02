@@ -31,20 +31,24 @@ void RoomService::_createRoom(const std::shared_ptr<TCPConnection> &player1, con
     for (const auto &player : players)
     {
         auto conn = player.first;
-        conn->events.subscribe("disconnect", [this, &conn, roomId, players]()
+        std::weak_ptr<TCPConnection> weakConn = conn;
+        conn->events.subscribe("disconnect", [this, roomId]()
                                {
-                                        for (const auto& opponent : players)
-                                        {
-                                            if (!opponent.first->isClosed() && opponent.first != conn)
-                                            {
-                                                OpponentOutPacket packet;
-                                                packet.commandId = CommandId::C_OPPONENT_OUT;
-                                                packet.length = sizeof(0);
-                                                opponent.first->send(packet.toBuffer(), sizeof(OpponentOutPacket));
-                                            }
-                                        }
-
-                                        _rooms.erase(roomId); });
+                            auto roomIt = _rooms.find(roomId);
+                            if (roomIt != _rooms.end()) {
+                                OpponentOutPacket packet;
+                                packet.commandId = CommandId::C_OPPONENT_OUT;
+                                packet.length = 0;
+                                
+                                auto connections = roomIt->second->getConnections();
+                                for (auto& connection : connections) {
+                                    if (!connection->isClosed()) {
+                                        connection->send(packet.toBuffer(), sizeof(OpponentOutPacket));
+                                    }
+                                }
+                                
+                                _rooms.erase(roomIt);
+                            } });
     }
 
     // Notify both players about the room creation
@@ -74,6 +78,9 @@ void RoomService::_notifyRoomCreated(
 
 void RoomService::_removeConnectionFromWaiting(const std::shared_ptr<TCPConnection> &connection)
 {
+    if (!connection)
+        return;
+
     auto it = std::find_if(_connections.begin(), _connections.end(),
                            [&connection](const std::shared_ptr<TCPConnection> &conn)
                            {
@@ -91,8 +98,9 @@ void RoomService::waitForRoom(const std::shared_ptr<TCPConnection> &connection)
     {
         // If no room is available, create a new one
         _connections.push_back(connection);
-        connection->events.subscribe("disconnect", [this, &connection]()
-                                     { _removeConnectionFromWaiting(connection); });
+        std::weak_ptr<TCPConnection> weakConn = connection;
+        connection->events.subscribe("disconnect", [this, weakConn]()
+                                     { _removeConnectionFromWaiting(weakConn.lock()); });
     }
     else
     {

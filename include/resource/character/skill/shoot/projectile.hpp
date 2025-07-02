@@ -5,6 +5,7 @@
 class IProjectile
 {
 protected:
+    float _damage;
     float _speed;
     Rect *_rect;
     bool _isFlipped = false; // true for right, false for left
@@ -15,6 +16,7 @@ public:
     Rect &getRect() const { return *_rect; }
     bool getIsFlipped() const { return _isFlipped; }
     float getSpeed() const { return _speed; }
+    float getDamage() const { return _damage; }
 
     virtual ~IProjectile()
     {
