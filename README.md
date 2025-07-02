@@ -27,7 +27,7 @@ Before building and running this project, ensure you have the following dependen
 Install required C++ libraries using vcpkg:
 
 ```bash
-vcpkg isntall
+vcpkg install
 ```
 
 **Note**: Ensure your vcpkg installation is properly configured and the `VCPKG_ROOT` environment variable is set.

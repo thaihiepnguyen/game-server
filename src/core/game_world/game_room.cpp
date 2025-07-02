@@ -1,6 +1,7 @@
 #include "core/game_world/game_room.hpp"
 #include "resource/character/skill/shoot/shootable.hpp"
 #include "resource/character/archer.hpp"
+#include "resource/character/fighter.hpp"
 #include "resource/character/wizard.hpp"
 #include "protocol/arrow_packet.hpp"
 #include "protocol/fire_packet.hpp"
@@ -317,13 +318,18 @@ void GameRoom::_updateInteractionBetween(std::shared_ptr<ICharacter> character, 
         {
             float damageRatio = character->getAttackDamage() * (intersection->getWidth() / opponent->getRect()->getWidth());
 
-            if (character->getState() == CharacterState::ATK_C)
+            Kickable *kickableCharacter = dynamic_cast<Kickable *>(character.get());
+            if (kickableCharacter != nullptr)
             {
-                Kickable *kickableCharacter = dynamic_cast<Kickable *>(character.get());
-                if (kickableCharacter != nullptr)
+                Fighter *fighter = dynamic_cast<Fighter *>(character.get());
+                if (fighter != nullptr && character->getState() == CharacterState::ATK_C)
                 {
                     float knockBack = kickableCharacter->kickAway();
                     opponent->hit((int)(damageRatio), (int)knockBack);
+                }
+                else
+                {
+                    opponent->hit((int)damageRatio);
                 }
             }
             else

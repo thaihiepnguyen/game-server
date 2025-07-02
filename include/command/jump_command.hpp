@@ -14,5 +14,5 @@ public:
         _inputService = provider->getService<InputService>();
     }
 
-    void execute(const std::shared_ptr<TCPConnection> &connection, const char *data, std::size_t length);
+    void execute(const std::shared_ptr<TCPConnection> &connection, const char *data, std::size_t length) override;
 };
