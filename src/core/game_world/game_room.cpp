@@ -309,7 +309,7 @@ void GameRoom::_broadcastUpdate()
 
 void GameRoom::_updateInteractionBetween(std::shared_ptr<ICharacter> character, std::shared_ptr<ICharacter> opponent)
 {
-    auto attackRect = character->getAttackRect();
+    auto attackRect = character->getAttackRect(); // TODO: fix this mistake by using share_ptr!!!! memory leak!!
 
     if (attackRect != nullptr && attackRect->collidesWith(opponent->getRect()))
     {

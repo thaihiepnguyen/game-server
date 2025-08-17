@@ -6,7 +6,8 @@ Shootable::~Shootable()
     {
         if (projectile)
         {
-            delete projectile;
+            delete projectile; // TODO: remember to avoid dangling pointer.
+            projectile = nullptr;
         }
     }
 }

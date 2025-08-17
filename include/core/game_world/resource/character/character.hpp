@@ -51,7 +51,8 @@ protected:
 
     std::vector<int> _getStatesBlockingMovement() const
     {
-        return {
+        return 
+        {
             CharacterState::DEF,
             CharacterState::ATK_Z,
             CharacterState::ATK_X,
